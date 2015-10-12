@@ -2,12 +2,13 @@
 
 import re
 import MySQLdb
-from tutorial.items import NaverArticleItem,NaverCommentItem,MbcArticleItem,NeteaseArticleItem,NeteaseCommentItem
+from tutorial.items import *
 from tutorial.spiders.netease_spider_byday import NeteaseSpiderByDay
 from tutorial.spiders.netease_spider import NeteaseSpider
 from tutorial.spiders.naver_quick_spider import NaverQuickSpider
 from tutorial.spiders.peoplenet_spider import PeoplenetSpider
-from tutorial.items import PeoplenetArticleItem, PeoplenetCommentItem
+from tutorial.spiders.xinhua_spider import XinhuaSpider
+
 
 # Define your item pipelines here
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -39,6 +40,10 @@ class MySQLPipeline(object):
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
         elif isinstance(spider, NaverQuickSpider):
+            self.db_name = 'internetNews'
+            self.db_user = 'mers_hwyun'
+            self.db_pw = 'buECAs5ePudeB92R'
+        elif isinstance(spider, XinhuaSpider):
             self.db_name = 'internetNews'
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
@@ -89,6 +94,10 @@ class MySQLPipeline(object):
             comment_sql = u'insert into comments_people (aid,date,username,like_count,contents,comment_id) values (%s,%s,%s,%s,%s,%s)'
             self.cur.execute(comment_sql, (item['aid'],item['date'],item['username'],item['like_count'],item['contents'],item['comment_id']))
             return item
+        elif isinstance(item, XinhuaArticleItem):
+            table_name = 'articles_xinhua'
+        elif isinstance(item, XinhuaCommentItem):
+            table_name = 'comments_xinhua'
         sql = u'insert into ' + table_name + ' ('
         for key in item.keys():
             sql += key
