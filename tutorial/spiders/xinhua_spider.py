@@ -61,8 +61,7 @@ class XinhuaSpider(scrapy.Spider):
                 news_aid = urlparse(news_url)[2]
                 # news title
                 news_title = news_article.xpath('.//title/text()').extract()[0]
-                # news author
-                news_author = news_article.xpath('.//author/text()').extract()[0]
+                
                 # news date
                 news_date = ''.join(news_article.xpath('./text()').extract())
                 
@@ -70,7 +69,7 @@ class XinhuaSpider(scrapy.Spider):
                 article['url'] = news_url
                 article['aid'] = news_aid
                 article['title'] = news_title
-                article['author'] = news_author
+                #
                 article['date'] = news_date
                 article['category'] = self.news_category
                 
@@ -102,11 +101,12 @@ class XinhuaSpider(scrapy.Spider):
         
         news_content = response.xpath('.//div[@id="center"]/div[@id="article"]/div[@class="article"]//text()').extract()
         news_content = ' '.join(news_content).strip()
-        #print news_content
+        
+        news_author = response.xpath('.//div[@id="center"]/div[@id="article"]//em[@id="source"]//text()').extract()[0]
         
         article['contents'] = news_content
         article['date'] = news_date
-
+        article['author'] = news_author
         
         yield article
         #for comment page
