@@ -8,6 +8,9 @@ from tutorial.spiders.netease_spider import NeteaseSpider
 from tutorial.spiders.naver_quick_spider import NaverQuickSpider
 from tutorial.spiders.peoplenet_spider import PeoplenetSpider
 from tutorial.items import PeoplenetArticleItem, PeoplenetCommentItem
+from tutorial.spiders.ce_spider import CeSpider
+from tutorial.items import CeArticleItem
+
 
 # Define your item pipelines here
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -31,6 +34,10 @@ class MySQLPipeline(object):
             self.db_user = 'mers_zhwang'
             self.db_pw = 'Khhd7ALtc8XLhwVK'
         elif isinstance(spider,NeteaseSpiderByDay):
+            self.db_name = 'internetNews'
+            self.db_user = 'mers_zhwang'
+            self.db_pw = 'Khhd7ALtc8XLhwVK'
+        elif isinstance(spider,CeSpider):
             self.db_name = 'internetNews'
             self.db_user = 'mers_zhwang'
             self.db_pw = 'Khhd7ALtc8XLhwVK'
@@ -66,6 +73,8 @@ class MySQLPipeline(object):
             table_name = 'articles'
         elif isinstance(item, NeteaseArticleItem):
             table_name = 'articles_163'
+        elif isinstance(item, CeArticleItem):
+            table_name = 'articles_ce'
         elif isinstance(item, NeteaseCommentItem):
             table_name = 'comments_163'
         elif isinstance(item, NaverCommentItem):

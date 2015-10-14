@@ -83,8 +83,9 @@ class PeoplenetCommentItem(scrapy.Item):
 
 class CeArticleItem(scrapy.Item):
     aid = scrapy.Field()
-    date =scrapy.Field()
+    date = scrapy.Field()
     agency = scrapy.Field()
     title = scrapy.Field()
     contents = scrapy.Field()
     url = scrapy.Field()
+    category = scrapy.Field()
