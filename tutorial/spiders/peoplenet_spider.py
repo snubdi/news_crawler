@@ -22,6 +22,7 @@ class PeoplenetSpider(scrapy.Spider):
     s_date = ''
     page_cnt = 1
     dont_filter = False
+    
 
     '''
     Constructor
@@ -31,13 +32,20 @@ class PeoplenetSpider(scrapy.Spider):
         self.start_urls = [self.get_query_url(self.s_date)]
         print self.start_urls
 
+
     '''
     Get the query url
     '''
     def get_query_url(self, search_date):
         return 'http://news.people.com.cn/210801/211150/index.js?_=1442260367583'
 
-
+    
+    '''
+    Starting point
+    Retrieve the news link from json
+    Args:
+     response - the response object pertaining to the json page
+    '''
     def parse(self, response):
 
         try:
@@ -50,7 +58,7 @@ class PeoplenetSpider(scrapy.Spider):
             js = html_utf.replace('{"items":','')
             js_0 = js.replace(']}',']')
             
-            #content = ''
+            
             #read json
             hjson = json.loads(js_0)
             for items in hjson:
@@ -60,7 +68,6 @@ class PeoplenetSpider(scrapy.Spider):
                 article['title'] = items['title']
                 article['url'] = items['url']
                 news_url = items['url']
-                #article['contents'] = content
 
 
                 req = scrapy.Request(news_url, callback = self.parse_news, dont_filter = self.dont_filter)
@@ -70,8 +77,13 @@ class PeoplenetSpider(scrapy.Spider):
         except Exception, e:
             print 'ERROR!!!!!!!!!!!!!  URL :'
             print traceback.print_exc(file = sys.stdout)
-            
 
+            
+    '''
+    Retrieve the next page's contents of news from the given news
+    Args:
+     response - the response object pertaining to the next page of a given news
+    '''
     def parse_next_page(self, response):
 
         try:
@@ -111,10 +123,15 @@ class PeoplenetSpider(scrapy.Spider):
                 print traceback.print_exc(file = sys.stdout)
         
 
+    '''
+    1: Retrieve the next page of a news if have
+    2: Retrieve the comment json page of a given news
+    Args:
+     response - the response object pertaining to the news page
+    '''
     def parse_news(self, response):
         try:
             #get the rest of the article
-            #content = response.meta['contents']
             article = response.meta['article']
             agency = response.xpath('//*[@id="p_origin"]/a/text()').extract()
             content_1 = response.xpath('//*[@id="p_content"]/p/text()').extract()
@@ -189,6 +206,14 @@ class PeoplenetSpider(scrapy.Spider):
                 article['category'] = '食品'
             elif 'edu.people' in category_url:
                 article['category'] = '教育'
+            elif 'gongyi' in category_url:
+                article['category'] = '公益'
+            elif 'jiaju' in category_url:
+                article['category'] = '家居'
+            elif 'qipai' in category_url:
+                article['category'] = '棋牌'
+            elif 'www.people' in category_url:
+                article['category'] = '人民微博'
             else:
                 article['category'] = '其他'
 
@@ -221,6 +246,11 @@ class PeoplenetSpider(scrapy.Spider):
             print traceback.print_exc(file = sys.stdout)
             
 
+    '''
+    Retrieve the comment of a given news
+    Args:
+     response - the response object pertaining to the json page of comment
+    '''
     def parse_comment(self, response):
 
         #get aid of comments
