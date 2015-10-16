@@ -52,7 +52,7 @@ class CeSpider(scrapy.Spider):
 
         news_list= response.xpath('//td[@height="24"]')
 
-        print news_list
+        #print news_list
         print 'Page %s' % self.page_cnt
         print 'news_size is :' + str(len(news_list))
         cnt = 0
@@ -112,7 +112,6 @@ class CeSpider(scrapy.Spider):
         date = ''
 
         parsed_response_url = urlparse(response.url)
-        #host_part = parsed_response_url[1]
 
         #news contents
         contents = ' '.join(response.xpath('//div[@class="TRS_Editor"]//p/text()').extract()).strip()

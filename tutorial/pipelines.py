@@ -7,13 +7,10 @@ from tutorial.spiders.netease_spider_byday import NeteaseSpiderByDay
 from tutorial.spiders.netease_spider import NeteaseSpider
 from tutorial.spiders.naver_quick_spider import NaverQuickSpider
 from tutorial.spiders.peoplenet_spider import PeoplenetSpider
-<<<<<<< HEAD
 from tutorial.items import PeoplenetArticleItem, PeoplenetCommentItem
 from tutorial.spiders.ce_spider import CeSpider
 from tutorial.items import CeArticleItem
-=======
 from tutorial.spiders.xinhua_spider import XinhuaSpider
->>>>>>> 8af475f35af7e61c068e12fe120648b1bc2092dd
 
 
 # Define your item pipelines here
