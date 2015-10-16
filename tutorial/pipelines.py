@@ -110,9 +110,11 @@ class MySQLPipeline(object):
         elif isinstance(item, GlobaltimesArticleItem):
             sql = u'insert into articles_globaltimes (aid,date,agency,title,contents,url,category) values (%s,%s,%s,%s,%s,%s,%s)'
             self.cur.execute(sql, (item['aid'],item['date'],item['agency'],item['title'],item['contents'],item['url'],item['category']))
+            return item
         elif isinstance(item, GlobaltimesCommentItem):
             comment_sql = u'replace into comments_globaltimes (comment_id,aid,username,contents,like_count) values (%s,%s,%s,%s,%s)'
             self.cur.execute(comment_sql, (item['comment_id'],item['aid'],item['username'],item['contents'],item['like_count']))
+            return item
         sql = u'insert into ' + table_name + ' ('
         for key in item.keys():
             sql += key

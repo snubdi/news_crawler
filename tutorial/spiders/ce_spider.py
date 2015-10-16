@@ -117,11 +117,11 @@ class CeSpider(scrapy.Spider):
         contents = ' '.join(response.xpath('//div[@class="TRS_Editor"]//p/text()').extract()).strip()
 
         #news agency
-        agency_ = response.xpath('//div[@class="laiyuan"]//span[@id="articleSource"]/text()').extract()[0]
+        agency_ = response.xpath('//div[@class="laiyuan"]//span[@id="articleSource"]/text()').extract()[0].replace(' ','').replace('\n','')
         agency = agency_[3:len(agency_)]
 
         #news category
-        #category = response.xpath('//a[@href="../../"]//[@class="CurrChnlCls"]').extract()
+        #category = response.xpath('//channel').extract()
 
         #populate agency,contents,category
         article['agency'] = agency
