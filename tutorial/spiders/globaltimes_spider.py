@@ -11,6 +11,8 @@ import scrapy
 from tutorial.items import GlobaltimesArticleItem,GlobaltimesCommentItem
 import MySQLdb
 import datetime
+from _elementtree import Comment
+from pycparser.c_ast import Default
 
 class GlobaltimesSpider(scrapy.Spider):
     name = 'globaltimes'
@@ -169,19 +171,26 @@ class GlobaltimesSpider(scrapy.Spider):
         
         json_content_0 = json_content.replace(';try{ comment_list({"code":22000,"msg":"success","data":[','[')
         json_content_1 = json_content_0.replace(']}); }catch(e){}',']')
-        json_content_2 = json_content_1.replace('"user":{','')
-        json_content_3 = json_content_2.replace('}}','}')
+        json_content_2 = json_content_1.replace('"user":{','"user":[{')
+        json_content_3 = json_content_2.replace('}}','}]}')
+
         
+        #read json
         comment_json = json.loads(json_content_3)
-        
+
         for items in comment_json:
             try:
                 comment = GlobaltimesCommentItem()
                 comment['aid'] = aid
                 comment['comment_id'] = items['_id']
-                comment['username'] = items['nickname']
                 comment['like_count'] = items['n_active']
                 comment['contents'] = items['content']
+                comment_time = time.localtime(items['ctime'])
+                comment_time_1 = time.strftime('%Y-%m-%d %H:%M:%S', comment_time)
+                comment['date'] = comment_time_1
+                comment['username'] = items['user'][0].get('nickname')
+                
+                
                 yield comment
             except Exception, e:
                 print 'Parse_comment ERROR!!!!!!!!!!!!!  :'
