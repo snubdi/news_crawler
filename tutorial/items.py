@@ -118,7 +118,7 @@ class GlobaltimesArticleItem(scrapy.Item):
     category = scrapy.Field()
 
 class GlobaltimesCommentItem(scrapy.Item):
-    #date = scrapy.Field()
+    date = scrapy.Field()
     aid = scrapy.Field()
     username = scrapy.Field()
     like_count = scrapy.Field()
