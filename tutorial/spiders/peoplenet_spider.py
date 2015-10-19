@@ -37,7 +37,9 @@ class PeoplenetSpider(scrapy.Spider):
     Get the query url
     '''
     def get_query_url(self, search_date):
-        return 'http://news.people.com.cn/210801/211150/index.js?_=1442260367583'
+        article_time = int(time.time())
+        article_time_1 = article_time - 3600
+        return 'http://news.people.com.cn/210801/211150/index.js?_='+str(article_time_1)
 
     
     '''
@@ -50,8 +52,8 @@ class PeoplenetSpider(scrapy.Spider):
 
         try:
             #Get news.people.com.cn's data
-            response = urllib2.urlopen(r'http://news.people.com.cn/210801/211150/index.js?_=1442260367583')
-            html_utf = response.read()
+            article_read = urllib2.urlopen(response.url)
+            html_utf = article_read.read()
             
 
             #transfer to json format
