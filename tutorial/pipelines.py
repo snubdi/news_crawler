@@ -7,10 +7,12 @@ from tutorial.spiders.netease_spider_byday import NeteaseSpiderByDay
 from tutorial.spiders.netease_spider import NeteaseSpider
 from tutorial.spiders.naver_quick_spider import NaverQuickSpider
 from tutorial.spiders.peoplenet_spider import PeoplenetSpider
+from tutorial.spiders.globaltimes_spider import GlobaltimesSpider
 from tutorial.items import PeoplenetArticleItem, PeoplenetCommentItem
 from tutorial.spiders.ce_spider import CeSpider
 from tutorial.items import CeArticleItem
 from tutorial.spiders.xinhua_spider import XinhuaSpider
+from tutorial.items import GlobaltimesArticleItem, GlobaltimesCommentItem
 
 
 # Define your item pipelines here
@@ -54,6 +56,10 @@ class MySQLPipeline(object):
             self.db_name = 'internetNews'
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
+        elif isinstance(spider, GlobaltimesSpider):
+            self.db_name = 'internetNews'
+            self.db_user = 'mers_hwyun'
+            self.db_pw = 'buECAs5ePudeB92R'
         try:
             self.conn = MySQLdb.connect(
                     host = self.db_host,
@@ -90,31 +96,17 @@ class MySQLPipeline(object):
             table_name = 'comments'
 
         elif isinstance(item, PeoplenetArticleItem):
-            #table_name = 'peoplenet_articles'
             table_name = 'articles_people'
-            #sql = u'insert into peoplenet_articles (agency,aid,contents,date,title,url,category) values (%s,%s,%s,%s,%s,%s,%s)'
-            sql = u'insert into articles_people (agency,aid,contents,date,title,url,category) values (%s,%s,%s,%s,%s,%s,%s)'
-            self.cur.execute(sql, (item['agency'],item['aid'],item['contents'],item['date'],item['title'],item['url'],item['category']))
-            return item
         elif isinstance(item, PeoplenetCommentItem):
-            #table_name = 'peoplenet_comments'
             table_name = 'comments_people'
-            #comment_sql = u'insert into peoplenet_comments (aid,date,username,like_count,contents) values (%s,%s,%s,%s,%s,)'
-            comment_sql = u'insert into comments_people (aid,date,username,like_count,contents,comment_id) values (%s,%s,%s,%s,%s,%s)'
-            self.cur.execute(comment_sql, (item['aid'],item['date'],item['username'],item['like_count'],item['contents'],item['comment_id']))
-            return item
         elif isinstance(item, XinhuaArticleItem):
             table_name = 'articles_xinhua'
         elif isinstance(item, XinhuaCommentItem):
             table_name = 'comments_xinhua'
         elif isinstance(item, GlobaltimesArticleItem):
-            sql = u'insert into articles_globaltimes (aid,date,agency,title,contents,url,category) values (%s,%s,%s,%s,%s,%s,%s)'
-            self.cur.execute(sql, (item['aid'],item['date'],item['agency'],item['title'],item['contents'],item['url'],item['category']))
-            return item
+            table_name = 'articles_globaltimes'
         elif isinstance(item, GlobaltimesCommentItem):
-            comment_sql = u'replace into comments_globaltimes (comment_id,aid,username,contents,like_count,date) values (%s,%s,%s,%s,%s,%s)'
-            self.cur.execute(comment_sql, (item['comment_id'],item['aid'],item['username'],item['contents'],item['like_count'],items['date']))
-            return item
+            table_name = 'comments_globaltimes'
         sql = u'insert into ' + table_name + ' ('
         for key in item.keys():
             sql += key
