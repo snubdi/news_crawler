@@ -96,14 +96,12 @@ class MySQLPipeline(object):
             table_name = 'comments'
 
         elif isinstance(item, PeoplenetArticleItem):
-            #table_name = 'peoplenet_articles'
             table_name = 'articles_people'
             #sql = u'insert into peoplenet_articles (agency,aid,contents,date,title,url,category) values (%s,%s,%s,%s,%s,%s,%s)'
             #sql = u'insert into articles_people (agency,aid,contents,date,title,url,category) values (%s,%s,%s,%s,%s,%s,%s)'
             #self.cur.execute(sql, (item['agency'],item['aid'],item['contents'],item['date'],item['title'],item['url'],item['category']))
             #return item
         elif isinstance(item, PeoplenetCommentItem):
-            #table_name = 'peoplenet_comments'
             table_name = 'comments_people'
             #comment_sql = u'insert into peoplenet_comments (aid,date,username,like_count,contents) values (%s,%s,%s,%s,%s,)'
             #comment_sql = u'insert into comments_people (aid,date,username,like_count,contents,comment_id) values (%s,%s,%s,%s,%s,%s)'
