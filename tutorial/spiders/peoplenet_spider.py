@@ -8,157 +8,246 @@ import urllib
 import urllib2
 from urlparse import urlparse, parse_qs
 import scrapy
-from tutorial.items import GlobaltimesArticleItem,GlobaltimesCommentItem
+from tutorial.items import PeoplenetArticleItem,PeoplenetCommentItem
 import MySQLdb
 import datetime
-from _elementtree import Comment
-from pycparser.c_ast import Default
+from scrapy.selector import Selector
+from scrapy.http import HtmlResponse
 
-class GlobaltimesSpider(scrapy.Spider):
-    name = 'globaltimes'
-    allowed_domains = ['huanqiu.com']
-    start_urls = ["http://roll.huanqiu.com/topnews.html",
-                  "http://roll.huanqiu.com/topnews_2.html",
-                  "http://roll.huanqiu.com/topnews_3.html",
-                  "http://roll.huanqiu.com/topnews_4.html",
-                  "http://roll.huanqiu.com/topnews_5.html",
-                  "http://roll.huanqiu.com/topnews_6.html",
-                  "http://roll.huanqiu.com/topnews_7.html",
-                  "http://roll.huanqiu.com/topnews_8.html",
-                  "http://roll.huanqiu.com/topnews_9.html",
-                  "http://roll.huanqiu.com/topnews_10.html",
-                  ]
+class PeoplenetSpider(scrapy.Spider):
+    name = 'peoplenet'
+    allowed_domains = ['people.com.cn']
+    start_urls = []
+
+    s_date = ''
+    page_cnt = 1
+    dont_filter = False
+    
+
+    '''
+    Constructor
+    '''
+    def __init__(self, search_date = '2015-08-01', *args, **kwargs):
+        self.s_date = search_date
+        self.start_urls = [self.get_query_url(self.s_date)]
+        print self.start_urls
 
 
+    '''
+    Get the query url
+    '''
+    def get_query_url(self, search_date):
+        article_time = int(time.time())
+        article_time_1 = article_time - 3600
+        return 'http://news.people.com.cn/210801/211150/index.js?_='+str(article_time_1)
+
+    
     '''
     Starting point
-    Retrieve news links from news list pages
+    Retrieve the news link from json
     Args:
-     response - the response object pertaining to the list page
+     response - the response object pertaining to the json page
     '''
     def parse(self, response):
-        try:
-            #get news list
-            sites = response.xpath('//*[@id="panesT"]/div[1]/div[1]/ul/li')
 
-            #get the url of news from the news list
-            for site in sites:
-                article = GlobaltimesArticleItem()
-                article['title'] = site.xpath('a/text()').extract()
-                article['date'] = site.xpath('em/text()').extract()
-                url = site.xpath('a/@href').extract()
-                news_url = ''.join(url)
-                
-                req = scrapy.Request(news_url, callback = self.parse_news)
+        try:
+            #Get news.people.com.cn's data
+            article_read = urllib2.urlopen(response.url)
+            html_utf = article_read.read()
+            
+
+            #transfer to json format
+            js = html_utf.replace('{"items":','')
+            js_0 = js.replace(']}',']')
+            
+            
+            #read json
+            hjson = json.loads(js_0)
+            for items in hjson:
+                article = PeoplenetArticleItem()
+                article['aid'] = items['id']
+                article['date'] = items['date']
+                article['title'] = items['title']
+                article['url'] = items['url']
+                news_url = items['url']
+
+
+                req = scrapy.Request(news_url, callback = self.parse_news, dont_filter = self.dont_filter)
                 req.meta['article'] = article
                 yield req
-                
                 
         except Exception, e:
             print 'ERROR!!!!!!!!!!!!!  URL :'
             print traceback.print_exc(file = sys.stdout)
 
+            
+    '''
+    Retrieve the next page's contents of news from the given news
+    Args:
+     response - the response object pertaining to the next page of a given news
+    '''
+    def parse_next_page(self, response):
+
+        try:
+            #get the contents of last page
+            article = response.meta['article']
+            content = response.meta['contents']
+
+            #get the contents of this page
+            content_1 = response.xpath('//*[@id="p_content"]/p/text()').extract()
+            content_1_1 = ''.join(content_1)
+
+            #join the contents of this page to the contents of last page
+            content_2 = content + content_1_1
+            article['contents'] = content_2
+
+            #determine whether there have next page
+            this_page = response.url
+            count = this_page[-6:-5]
+            count_1 = int(count) + 1
+            str_1 = '//*[@id="p_content"]/div[3]/a['+str(count_1)+']'
+            
+            if response.xpath(str_1):
+                str_2 = str_1 + '/@href'
+                next_url_0 = response.xpath(str_2).extract()
+                pos = this_page.find("/n/")
+                next_url = this_page[:pos]+str(next_url_0[0])
+                req = scrapy.Request(next_url, callback = self.parse_next_page, dont_filter = self.dont_filter)
+                req.meta['article'] = article
+                req.meta['contents'] = content_2
+                yield req
+                
+            else:
+                yield article
+        except Exception, e:
+                print 'Parse_next_page ERROR!!!!!!!!!!!!!  :'
+                print items
+                print traceback.print_exc(file = sys.stdout)
+        
 
     '''
-    Retrieve news links from news list pages
+    1: Retrieve the next page of a news if have
+    2: Retrieve the comment json page of a given news
     Args:
-     response - the response object pertaining to the list page
+     response - the response object pertaining to the news page
     '''
     def parse_news(self, response):
         try:
-            
+            #get the rest of the article
             article = response.meta['article']
-
-            agency = response.xpath('//*[@id="source_baidu"]/a/text()').extract()
+            agency = response.xpath('//*[@id="p_origin"]/a/text()').extract()
+            content_1 = response.xpath('//*[@id="p_content"]/p/text()').extract()
             article['agency'] = agency[0]
-
-            url = response.url
-            aid = url[-12:-5]
-            article['aid'] = aid
-            article['url'] = url
-
-            content_1 = response.xpath('//*[@id="text"]/p/text()').extract()
-            content = ''.join(content_1)
-            article['contents'] = content
             
-            category = response.xpath('//*[@id="topC"]/div[1]/a[2]/text()').extract()
-            category_1 = category[0]
-            article['category'] = category_1
 
-            #determine whether there has a next page
-            if response.xpath('//*[@id="pages"]/a[2]/@href'):
-                
-                next_url = response.xpath('//*[@id="pages"]/a[2]/@href').extract()
-                next_url_1 = ''.join(next_url)
-                req = scrapy.Request(next_url_1, callback = self.parse_next_page)
+            #get the cagegory of news
+            category_url = response.url
+            if 'world' in category_url:
+                article['category'] = '国际'
+            elif 'politics' in category_url:
+                article['category'] = '时政'
+            elif 'finance' in category_url:
+                article['category'] = '财经'
+            elif 'money' in category_url:
+                article['category'] = '金融'
+            elif 'energy' in category_url:
+                article['category'] = '能源'
+            elif 'legal' in category_url:
+                article['category'] = '法治'
+            elif 'society' in category_url:
+                article['category'] = '社会'
+            elif 'hm' in category_url:
+                article['category'] = '港澳'
+            elif 'pic' in category_url:
+                article['category'] = '图片'
+            elif 'tw' in category_url:
+                article['category'] = '台湾'
+            elif 'sports' in category_url:
+                article['category'] = '体育'
+            elif 'military' in category_url:
+                article['category'] = '军事'
+            elif 'health' in category_url:
+                article['category'] = '健康'
+            elif 'theory' in category_url:
+                article['category'] = '理论'
+            elif 'opinion' in category_url:
+                article['category'] = '观点'
+            elif 'media' in category_url:
+                article['category'] = '传媒'
+            elif 'ent' in category_url:
+                article['category'] = '娱乐'
+            elif 'it.people' in category_url:
+                article['category'] = 'IT'
+            elif 'env' in category_url:
+                article['category'] = '环保'
+            elif 'tc' in category_url:
+                article['category'] = '通信'
+            elif 'homea' in category_url:
+                article['category'] = '家电'
+            elif 'house' in category_url:
+                article['category'] = '房产'
+            elif 'ccnews' in category_url:
+                article['category'] = '央企'
+            elif 'scitech' in category_url:
+                article['category'] = '科技'
+            elif 'culture' in category_url:
+                article['category'] = '文化'
+            elif 'yuqing' in category_url:
+                article['category'] = '舆情'
+            elif 'lady' in category_url:
+                article['category'] = '时尚'
+            elif 'game' in category_url:
+                article['category'] = '游戏'
+            elif 'comic' in category_url:
+                article['category'] = '动漫'
+            elif 'npc.people' in category_url:
+                article['category'] = '人大新闻'
+            elif 'usa.people' in category_url:
+                article['category'] = '美国'
+            elif 'shipin' in category_url:
+                article['category'] = '食品'
+            elif 'edu.people' in category_url:
+                article['category'] = '教育'
+            elif 'gongyi' in category_url:
+                article['category'] = '公益'
+            elif 'jiaju' in category_url:
+                article['category'] = '家居'
+            elif 'qipai' in category_url:
+                article['category'] = '棋牌'
+            elif 'www.people' in category_url:
+                article['category'] = '人民微博'
+            else:
+                article['category'] = '其他'
+
+            article['contents'] = ''.join(content_1)
+            
+            if response.xpath('//*[@id="p_content"]/div[3]'):
+            
+                next_url_0 = response.xpath('//*[@id="p_content"]/div[3]/a[2]/@href').extract()
+                pos = category_url.find("/n/")
+                next_url = category_url[:pos]+str(next_url_0[0])
+                req = scrapy.Request(next_url, callback = self.parse_next_page, dont_filter = self.dont_filter)
                 req.meta['article'] = article
                 req.meta['contents'] = ''.join(content_1)
                 yield req
-                
+                 
             
             else:
                 yield response.meta['article']
 
-            
-            #get json url of comments
-            get_url = 'http://commentn.huanqiu.com/api/v2/async?a=comment&m=source_info&appid=e8fcff106c8f&sourceid='+aid+'&url='+url
-            get_url_read = urllib2.urlopen(get_url)
-            get_id = get_url_read.read()
-            json_id = get_id[45:69]
-            comment_json_url = 'http://commentn.huanqiu.com/api/v2/async?a=comment&m=comment_list&sid='+json_id+'&n=15&p=1&appid=e8fcff106c8f&callback=comment_list'
-            comment_req = scrapy.Request(comment_json_url, callback = self.parse_comment)
-            comment_req.meta['aid'] = aid
-            yield comment_req
-            
-            
+
+             
+            #get the json url of comments
+            comment_url = category_url
+            comment_json_url = 'http://bbs1.people.com.cn/api/news.do?action=lastNewsComments&newsId='+article['aid']   
+            req = scrapy.Request(comment_json_url, callback = self.parse_comment, dont_filter = self.dont_filter)
+            yield req
+                        
+
         except Exception, e:
-            print 'Parse_news ERROR!!!!!!!!!!!!!  URL :'+ response.url
-            print traceback.print_exc(file = sys.stdout)    
-
-
-    '''
-    Retrieve the contents of next page of a given news
-    Args:
-     response - the response object pertaining to the next page
-    '''
-    def parse_next_page(self, response):
-        try:
-            article = response.meta['article']
-            content = response.meta['contents']
-
-            content_1 = response.xpath('//*[@id="text"]/p/text()').extract()
-            content_1_1 = ''.join(content_1)
-
-            #merger this page's content with previous content
-            content_2 = content + content_1_1
-            article['contents'] = content_2
-            
-
-            this_page = response.url
-            count = this_page[-6:-5]
-            
-            count_1 = int(count)+1
-            
-            str_1 = '//*[@id="pages"]/a['+str(count_1)+']/text()'
-            str_2 = '//*[@id="pages"]/a['+str(count_1)+']/@href'
-            count_2 = response.xpath(str_1).extract()
-
-            #determine whether there has a next page
-            if u'\u4e0b\u4e00\u9875' in count_2:
-                yield article
-
-            else:
-                next_url = response.xpath(str_2).extract()
-                next_url_1 = str(next_url[0])
-                req = scrapy.Request(next_url_1, callback = self.parse_next_page)
-                req.meta['article'] = article
-                req.meta['contents'] = content_2
-                yield req
-       
-        except Exception, e:
-            print 'Parse_next_page ERROR!!!!!!!!!!!!!  :'+response.url
+            print 'Parse_news ERROR!!!!!!!!!!!!!  URL :'+ article['url']
             print traceback.print_exc(file = sys.stdout)
-
+            
 
     '''
     Retrieve the comment of a given news
@@ -166,49 +255,51 @@ class GlobaltimesSpider(scrapy.Spider):
      response - the response object pertaining to the json page of comment
     '''
     def parse_comment(self, response):
-        aid = response.meta['aid']
-        json_read = urllib2.urlopen(response.url)
-        json_content = json_read.read()
+
+        #get aid of comments
+        comment_url = response.url
+        aid = comment_url[-8:]
+        
+        
+        #open comment json url
+        comment_json_read = urllib2.urlopen(response.url)
+        comment_json_0 = comment_json_read.read()
+        comment_json_1 = unicode(comment_json_0, 'gbk')
+        comment_json_2 = comment_json_1.encode("UTF-8")
+        
+        
+        #transfer to json format
+        comment_json_3 = comment_json_2.replace('\\','')
+        comment_json_4 = comment_json_3.replace('["{','[{')
+        comment_json_5 = comment_json_4.replace('}"]','}]')
+        comment_json_6 = comment_json_5.replace('}","{','},{')
+
 
         
-        if len(json_content) > 70:
+        #read json
+        comment_json = json.loads(comment_json_6)
+        for items in comment_json:
+            try:
+                comment = PeoplenetCommentItem()
+                comment['date'] = items['createTime']
+                comment['like_count'] = items['voteYes']
+                comment['username'] = items['userNick']
+                comment['contents'] = items['postTitle']
+                comment['comment_id'] = items['postId']
+                comment['aid'] = aid
+                yield comment
+            except Exception, e:
+                print 'Parse_comment ERROR!!!!!!!!!!!!!  :'
+                print items
+                print traceback.print_exc(file = sys.stdout)
+        
+
+        
+        
+        
             
-            json_content_0 = json_content.replace(';try{ comment_list({"code":22000,"msg":"success","data":[','[')
-            json_content_1 = json_content_0.replace(']}); }catch(e){}',']')
-            json_content_2 = json_content_1.replace('"user":{','"user":[{')
-            json_content_3 = json_content_2.replace('}}','}]}')
 
-        
-            #read json
-            comment_json = json.loads(json_content_3)
-
-            for items in comment_json:
-                try:
-                    comment = GlobaltimesCommentItem()
-                    comment['aid'] = aid
-                    comment['comment_id'] = items['_id']
-                    comment['like_count'] = items['n_active']
-                    comment['contents'] = items['content']
-                    comment_time = time.localtime(items['ctime'])
-                    comment_time_1 = time.strftime('%Y-%m-%d %H:%M:%S', comment_time)
-                    comment['date'] = comment_time_1
-                    comment['username'] = items['user'][0].get('nickname')
-                
-                
-                    yield comment
-                except Exception, e:
-                    print 'Parse_comment ERROR!!!!!!!!!!!!!  :'
-                    print items
-                    print traceback.print_exc(file = sys.stdout)
-
-        else:
-            print 'no comments'
-        
-        
-        
-        
-
-
-
-
+            
+            
+            
             
