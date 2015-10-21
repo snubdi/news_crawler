@@ -99,6 +99,7 @@ class GlobaltimesSpider(scrapy.Spider):
             else:
                 yield response.meta['article']
 
+            
             #get json url of comments
             get_url = 'http://commentn.huanqiu.com/api/v2/async?a=comment&m=source_info&appid=e8fcff106c8f&sourceid='+aid+'&url='+url
             get_url_read = urllib2.urlopen(get_url)
@@ -168,35 +169,41 @@ class GlobaltimesSpider(scrapy.Spider):
         aid = response.meta['aid']
         json_read = urllib2.urlopen(response.url)
         json_content = json_read.read()
-        
-        json_content_0 = json_content.replace(';try{ comment_list({"code":22000,"msg":"success","data":[','[')
-        json_content_1 = json_content_0.replace(']}); }catch(e){}',']')
-        json_content_2 = json_content_1.replace('"user":{','"user":[{')
-        json_content_3 = json_content_2.replace('}}','}]}')
 
         
-        #read json
-        comment_json = json.loads(json_content_3)
+        if len(json_content) > 70:
+            
+            json_content_0 = json_content.replace(';try{ comment_list({"code":22000,"msg":"success","data":[','[')
+            json_content_1 = json_content_0.replace(']}); }catch(e){}',']')
+            json_content_2 = json_content_1.replace('"user":{','"user":[{')
+            json_content_3 = json_content_2.replace('}}','}]}')
 
-        for items in comment_json:
-            try:
-                comment = GlobaltimesCommentItem()
-                comment['aid'] = aid
-                comment['comment_id'] = items['_id']
-                comment['like_count'] = items['n_active']
-                comment['contents'] = items['content']
-                comment_time = time.localtime(items['ctime'])
-                comment_time_1 = time.strftime('%Y-%m-%d %H:%M:%S', comment_time)
-                comment['date'] = comment_time_1
-                comment['username'] = items['user'][0].get('nickname')
+        
+            #read json
+            comment_json = json.loads(json_content_3)
+
+            for items in comment_json:
+                try:
+                    comment = GlobaltimesCommentItem()
+                    comment['aid'] = aid
+                    comment['comment_id'] = items['_id']
+                    comment['like_count'] = items['n_active']
+                    comment['contents'] = items['content']
+                    comment_time = time.localtime(items['ctime'])
+                    comment_time_1 = time.strftime('%Y-%m-%d %H:%M:%S', comment_time)
+                    comment['date'] = comment_time_1
+                    comment['username'] = items['user'][0].get('nickname')
                 
                 
-                yield comment
-            except Exception, e:
-                print 'Parse_comment ERROR!!!!!!!!!!!!!  :'
-                print items
-                print traceback.print_exc(file = sys.stdout)
+                    yield comment
+                except Exception, e:
+                    print 'Parse_comment ERROR!!!!!!!!!!!!!  :'
+                    print items
+                    print traceback.print_exc(file = sys.stdout)
 
+        else:
+            print 'no comments'
+        
         
         
         
