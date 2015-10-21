@@ -126,7 +126,24 @@ class CeSpider(scrapy.Spider):
         #populate agency,contents,category
         article['agency'] = agency
         article['contents'] = contents
-        #article['category'] = category
+        if 'cysc' in response.url:
+            article['category'] = '产业市场'
+        elif 'sjjj' in response.url:
+            article['category'] = '国际经济'
+        elif 'district' in response.url:
+            article['category'] = '地方经济'
+        elif 'gnsz' in response.url:
+            article['category'] = '国内时政'
+        elif 'shgj' in response.url:
+            article['category'] = '社会'
+        elif 'qqss' in response.url:
+            article['category'] = '全球时事'
+        elif 'finance' in response.url:
+            article['category'] = '经济'
+        elif 'specials' in response.url:
+            article['category'] = '独家专稿'
+        else:
+            article['category'] = '其他'
 
         yield article
 

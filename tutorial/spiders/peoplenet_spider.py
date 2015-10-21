@@ -236,6 +236,7 @@ class PeoplenetSpider(scrapy.Spider):
                 yield response.meta['article']
 
 
+             
             #get the json url of comments
             comment_url = category_url
             comment_json_url = 'http://bbs1.people.com.cn/api/news.do?action=lastNewsComments&newsId='+article['aid']   
@@ -265,32 +266,35 @@ class PeoplenetSpider(scrapy.Spider):
         comment_json_0 = comment_json_read.read()
         comment_json_1 = unicode(comment_json_0, 'gbk')
         comment_json_2 = comment_json_1.encode("UTF-8")
+        if len(comment_json_2) > 2:
         
         
-        #transfer to json format
-        comment_json_3 = comment_json_2.replace('\\','')
-        comment_json_4 = comment_json_3.replace('["{','[{')
-        comment_json_5 = comment_json_4.replace('}"]','}]')
-        comment_json_6 = comment_json_5.replace('}","{','},{')
+            #transfer to json format
+            comment_json_3 = comment_json_2.replace('\\','')
+            comment_json_4 = comment_json_3.replace('["{','[{')
+            comment_json_5 = comment_json_4.replace('}"]','}]')
+            comment_json_6 = comment_json_5.replace('}","{','},{')
 
 
-        #read json
-        comment_json = json.loads(comment_json_6)
-        for items in comment_json:
-            try:
-                comment = PeoplenetCommentItem()
-                comment['date'] = items['createTime']
-                comment['like_count'] = items['voteYes']
-                comment['username'] = items['userNick']
-                comment['contents'] = items['postTitle']
-                comment['comment_id'] = items['postId']
-                comment['aid'] = aid
-                yield comment
-            except Exception, e:
-                print 'Parse_comment ERROR!!!!!!!!!!!!!  :'
-                print items
-                print traceback.print_exc(file = sys.stdout)
         
+            #read json
+            comment_json = json.loads(comment_json_6)
+            for items in comment_json:
+                try:
+                    comment = PeoplenetCommentItem()
+                    comment['date'] = items['createTime']
+                    comment['like_count'] = items['voteYes']
+                    comment['username'] = items['userNick']
+                    comment['contents'] = items['postTitle']
+                    comment['comment_id'] = items['postId']
+                    comment['aid'] = aid
+                    yield comment
+                except Exception, e:
+                    print 'Parse_comment ERROR!!!!!!!!!!!!!  :'
+                    print items
+                    print traceback.print_exc(file = sys.stdout)
+        else:
+            print 'no comment'
 
         
         
