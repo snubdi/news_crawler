@@ -22,6 +22,7 @@ class XinhuaCommentItem(scrapy.Item):
     like_count = scrapy.Field()
     dislike_count = scrapy.Field()
     contents = scrapy.Field()
+    comment_id = scrapy.Field()
 class XinhuaArticleItem(scrapy.Item):
     aid = scrapy.Field()
     date = scrapy.Field()

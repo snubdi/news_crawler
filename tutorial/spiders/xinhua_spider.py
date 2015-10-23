@@ -35,9 +35,10 @@ class XinhuaSpider(scrapy.Spider):
     '''
     def get_query_url(self,news_category):
         _category = {
+              '':'http://www.xinhuanet.com/politics/news_politics.xml',
               'politics': 'http://www.xinhuanet.com/politics/news_politics.xml',
               'world': 'http://www.xinhuanet.com/world/news_world.xml',
-              'local': 'http://www.xinhuanet.com/local/news_province.xml',
+              'local': 'http://www.xinhuanet.com/local/news_province.xml'
         }
         return _category[news_category]
                 
@@ -59,6 +60,9 @@ class XinhuaSpider(scrapy.Spider):
                 news_url = news_article.xpath('.//link/text()').extract()[0]
                 #news aid
                 news_aid = urlparse(news_url)[2]
+                news_aid = "1-" + news_aid[news_aid.find("_")+1:news_aid.find(".")]
+                #if news_aid != '1-1116912399':
+                #    continue
                 # news title
                 news_title = news_article.xpath('.//title/text()').extract()[0]
                 
@@ -101,8 +105,15 @@ class XinhuaSpider(scrapy.Spider):
         
         news_content = response.xpath('.//div[@id="center"]/div[@id="article"]/div[@class="article"]//text()').extract()
         news_content = ' '.join(news_content).strip()
+        if len(news_content) <5:
+            news_content = response.xpath('.//div[@class="main pagewidth"]/div[@id="content"]/p/text()').extract()
+            news_content = ' '.join(news_content).strip()
         
-        news_author = response.xpath('.//div[@id="center"]/div[@id="article"]//em[@id="source"]//text()').extract()[0]
+        news_author = response.xpath('.//div[@id="center"]/div[@id="article"]//em[@id="source"]//text()').extract()
+        if len(news_author)>0:
+            news_author = news_author[0]
+        else:
+            news_author = response.xpath('.//div[@class="main_tit"]/div[@class="info"]/span[@id="source"]//text()').extract()[0]
         
         article['contents'] = news_content
         article['date'] = news_date
@@ -110,6 +121,15 @@ class XinhuaSpider(scrapy.Spider):
         
         yield article
         #for comment page
+        #comment_url = response.xpath('.//div[@id="da-comment"]//a[@target="_blank"]/@href').extract()
+        
+        comment_url = 'http://comment.home.news.cn/a/newsComm.do?_ksTS=1444922731622_49&callback=jsonp50&newsId=' + article['aid']
+        
+        print comment_url
+        #if len(comment_url) >0:            
+        req = scrapy.Request(comment_url, callback = self.parse_comment, dont_filter = True)
+        req.meta['newsId'] = article['aid']
+        yield req
         '''comment_check_url = 'http://m.news.naver.com/api/comment/count.json'
 
         comment_count_data = {
@@ -121,7 +141,26 @@ class XinhuaSpider(scrapy.Spider):
 
         return req
         '''
-
+        
+    def parse_comment(self, response):
+        
+        json_response = json.loads(response.body[8:-3])
+        
+        for comment in json_response['contentAll']:
+            comment_time = datetime.fromtimestamp(int(comment['commentTime']/1000))#.strftime('%d %m %Y %H:%M:%S')
+            #print comment_time
+            comment_item = XinhuaCommentItem()
+            comment_item['date'] = comment_time.strftime('%Y-%m-%d %H:%M:%S')
+            comment_item['comment_id'] = comment['commentId']
+            comment_item['aid'] = response.meta['newsId']
+            comment_item['username'] = comment['userId']
+            if comment['upAmount'] == None:
+                comment_item['like_count'] = 0
+            else:
+                comment_item['like_count'] = comment['upAmount']
+            comment_item['contents'] = comment['content']
+            print comment_item
+            yield comment_item
     '''
     Parse a date string in the form of '2015.07.10 오후 2:39' and return a time object
     Args:
