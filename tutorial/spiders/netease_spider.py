@@ -144,24 +144,7 @@ class NeteaseSpider(scrapy.Spider):
             #get boardId from page source
             c = re.search(r"(?<=boardId = ).+?(?=$)",pageSource,re.M)
             boardID = self.GetMiddleStr(c.group(),'"','",')
-            print boardID + '========================================='
 
-            '''
-            if category == 0:
-                comment_url += 'news_guonei8_bbs/'
-            elif category == 1:
-                comment_url += 'news3_bbs/'
-            elif category == 2:
-                comment_url += 'news_shehui7_bbs/'
-            elif category == 3:
-                comment_url += 'news3_bbs/'
-            elif category == 4:
-                comment_url += 'news3_bbs/'
-            elif category == 5:
-                comment_url += 'news_junshi_bbs/'
-            elif category == 6:
-                comment_url += 'photoview_bbs/'
-            '''
             comment_url = comment_url_base + boardID + '/' +  aid + '_1.html'
             print '=============' + comment_url
             req = scrapy.Request(comment_url, callback = self.parse_comment, dont_filter = self.dont_filter)
@@ -185,31 +168,32 @@ class NeteaseSpider(scrapy.Spider):
         #transfer to std json format
         js = self.GetMiddleStr(html_utf,'var newPostList={"newPosts":','}],')
         news_json = js + '}]'
-        
+
 
         hjson = json.loads(news_json, encoding ="utf-8")
         print 'comment size is :' + str(len(hjson))
-        
-        
+
+
         for items in hjson:
             try:
-                
+
                 if items.has_key('d'):
                     items.pop('d')
-                
+
                 max_reply = str(len(items))
-                
+
                 for key in items:
                     if key == max_reply:
                         comment_dic = items[key]
-                
+
                 comment = NeteaseCommentItem()
                 comment['date'] = comment_dic['t']
                 comment['aid'] = aid
                 comment['username'] = comment_dic['n']
                 comment['contents'] = comment_dic['b']
                 comment['like_count'] = comment_dic['v']
-                #comment['comment_id'] = comment_dic['p']
+                comment['dislike_count'] = comment_dic['a']
+                comment['comment_id'] = comment_dic['p']
                 yield comment
             except Exception, e:
                 print 'Parse_comment ERROR!!!!!!!!!!!!!  :'
