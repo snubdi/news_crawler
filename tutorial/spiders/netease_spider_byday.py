@@ -174,6 +174,7 @@ class NeteaseSpiderByDay(scrapy.Spider):
 
     def parse_comment(self, response):
         # print '==============================' + response.url
+        aid = response.meta['aid']
         res = urllib2.urlopen(response.url)
         # res = urllib2.urlopen(r'http://comment.news.163.com/cache/newlist/news_guonei8_bbs/B18LQ7NT0001124J_1.html')
         #comment json url is encoded by utf-8
@@ -184,22 +185,33 @@ class NeteaseSpiderByDay(scrapy.Spider):
 
         #transfer to std json format
         js = self.GetMiddleStr(html_utf,'var newPostList={"newPosts":','}],')
-        js_0 = js.replace('"d":0,','')
-        js_1 = js_0.replace('"1":{','')
-        js_2 = js_1.replace('}},','},')
-        news_json = js_2 + ']'
+        news_json = js + '}]'
+
 
         hjson = json.loads(news_json, encoding ="utf-8")
         print 'comment size is :' + str(len(hjson))
 
+
         for items in hjson:
             try:
+
+                if items.has_key('d'):
+                    items.pop('d')
+
+                max_reply = str(len(items))
+
+                for key in items:
+                    if key == max_reply:
+                        comment_dic = items[key]
+
                 comment = NeteaseCommentItem()
-                comment['date'] = items['t']
-                comment['aid'] = response.meta['aid']
-                comment['username'] = items['n']
-                comment['contents'] = items['b']
-                comment['like_count'] = items['v']
+                comment['date'] = comment_dic['t']
+                comment['aid'] = aid
+                comment['username'] = comment_dic['n']
+                comment['contents'] = comment_dic['b']
+                comment['like_count'] = comment_dic['v']
+                comment['dislike_count'] = comment_dic['a']
+                comment['comment_id'] = comment_dic['p']
                 yield comment
             except Exception, e:
                 print 'Parse_comment ERROR!!!!!!!!!!!!!  :'
@@ -212,5 +224,4 @@ class NeteaseSpiderByDay(scrapy.Spider):
         next_comment_url +=str(int(page)+1) + '.html'
         print next_comment_url
         yield scrapy.Request(next_comment_url, callback = self.parse_comment)
-
 

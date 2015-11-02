@@ -78,6 +78,7 @@ class NeteaseCommentItem(scrapy.Item):
     like_count = scrapy.Field()
     dislike_count = scrapy.Field()
     contents = scrapy.Field()
+    comment_id = scrapy.Field()
 
 class PeoplenetArticleItem(scrapy.Item):
     aid = scrapy.Field()
