@@ -205,4 +205,6 @@ class NeteaseSpider(scrapy.Spider):
         next_comment_url = response.url[:response.url.rfind('_')+1]
         next_comment_url +=str(int(page)+1) + '.html'
         print next_comment_url
-        yield scrapy.Request(next_comment_url, callback = self.parse_comment)
+        req = scrapy.Request(next_comment_url, callback = self.parse_comment, dont_filter = self.dont_filter)
+        req.meta['aid'] = aid
+        yield req
