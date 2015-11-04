@@ -16,7 +16,7 @@ db_name = 'internetNews'
 db_user = 'mers_hwyun'
 db_pw = 'buECAs5ePudeB92R'
 #mailing infomation
-mailto_list=["yunhiwen@hotmail.com","keith_wzh@hotmail.com","cuism1987@hotmail.com",] 
+mailto_list=["yunhiwen@hotmail.com","keith_wzh@hotmail.com","cuism1987@hotmail.com","willsong@snu.ac.kr"] 
 mail_host="smtp.gmail.com"
 mail_user="bigdata2015.snu"
 mail_pass="bigdata2015" 

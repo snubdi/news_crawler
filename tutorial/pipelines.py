@@ -81,7 +81,7 @@ class MySQLPipeline(object):
 
         table_name = ''
         if isinstance(item, NaverArticleItem):
-            table_name = 'articles'
+            table_name = 'articles_naver'
         elif isinstance(item, NeteaseArticleItem):
             table_name = 'articles_163'
         elif isinstance(item, CeArticleItem):
@@ -93,7 +93,7 @@ class MySQLPipeline(object):
             # ㅋㅋㅋㅋㅋㅋ/ㅎㅎㅎㅎㅎㅎ => ㅋ/ㅎ
             item['contents'] = re.sub(u'ㅋ{3,}', u'ㅋ', item['contents'], flags = re.M | re.S)
             item['contents'] = re.sub(u'ㅎ{3,}', u'ㅎ', item['contents'], flags = re.M | re.S)
-            table_name = 'comments'
+            table_name = 'comments_naver'
 
         elif isinstance(item, PeoplenetArticleItem):
             table_name = 'articles_people'
