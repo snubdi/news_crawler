@@ -26,7 +26,7 @@ class XinhuaCommentItem(scrapy.Item):
 class XinhuaArticleItem(scrapy.Item):
     aid = scrapy.Field()
     date = scrapy.Field()
-    author = scrapy.Field()
+    agency = scrapy.Field()
     title = scrapy.Field()
     contents = scrapy.Field()
     url = scrapy.Field()

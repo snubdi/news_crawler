@@ -117,7 +117,7 @@ class XinhuaSpider(scrapy.Spider):
         
         article['contents'] = news_content
         article['date'] = news_date
-        article['author'] = news_author
+        article['agency'] = news_author
         
         yield article
         #for comment page
