@@ -41,18 +41,14 @@ info += '========================================\n'
 #get count info from DB
 info += '{0:15s} {1:12s} {2:12s}'.format('Media', 'ArticleCount', 'CommentCount') + "\n"
 info += '----------------------------------------\n'
-sql = u'DELETE from crawl_infomation where date(date) = "' + check_date + u'"'
-cur.execute(sql)
-conn.commit()
 totalArticle, totalComment = 0,0
 for media in media_list:
-    print media
     sql = u'select count(*) from articles_'+media+' where  date(date) = "' + check_date + u'"'
     cur.execute(sql)
     articleCount = cur.fetchone()[0]
     totalArticle += articleCount
     if media == 'ce' :
-        commentCount = -1
+        commentCount = 0
     else:
         sql = u'select count(*) from comments_'+media+' where  date(date) = "' + check_date + u'"'
         cur.execute(sql)
