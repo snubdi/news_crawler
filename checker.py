@@ -8,8 +8,9 @@ import smtplib
 from email.mime.text import MIMEText  
 from prettytable import PrettyTable
 
+
 #target medias
-media_list = ['xinhua','163','naver','people','globaltimes']
+media_list = ['xinhua','163','naver','people','globaltimes','ce']
 #DB infomation
 db_host = 'localhost'
 db_name = 'internetNews'
@@ -36,22 +37,46 @@ except MySQLdb.Error, e:
 yesterday = datetime.now() + timedelta(days = -1)
 check_date = yesterday.strftime("%Y-%m-%d")
 info = "date: "+check_date + "\n"
-
+info += '========================================\n'
 #get count info from DB
-pt = PrettyTable(field_names=['Media', 'articleCount', 'CommentCount'])
+info += '{0:15s} {1:12s} {2:12s}'.format('Media', 'ArticleCount', 'CommentCount') + "\n"
+info += '----------------------------------------\n'
+sql = u'DELETE from crawl_infomation where date(date) = "' + check_date + u'"'
+cur.execute(sql)
+conn.commit()
+totalArticle, totalComment = 0,0
 for media in media_list:
+    print media
     sql = u'select count(*) from articles_'+media+' where  date(date) = "' + check_date + u'"'
     cur.execute(sql)
-    articleCount = str(cur.fetchone()[0])
-    sql = u'select count(*) from comments_'+media+' where  date(date) = "' + check_date + u'"'
+    articleCount = cur.fetchone()[0]
+    totalArticle += articleCount
+    if media == 'ce' :
+        commentCount = -1
+    else:
+        sql = u'select count(*) from comments_'+media+' where  date(date) = "' + check_date + u'"'
+        cur.execute(sql)
+        commentCount =cur.fetchone()[0]
+    totalComment += commentCount
+    info += '{0:15s} {1:12s} {2:12s}'.format(media,str(articleCount) ,str(commentCount)) + "\n"
+    #insert to DB
+    sql = u'replace into crawl_infomation values ("'+check_date+'","'+media+'",'+str(articleCount)+','+str(commentCount)+')'
     cur.execute(sql)
-    pt.add_row([media,articleCount,str(cur.fetchone()[0])])
+    conn.commit()
 
-print info + pt.get_string()
+info += '----------------------------------------\n'
+info += '{0:15s} {1:12s} {2:12s}'.format('Total', str(totalArticle), str(totalComment))
+sql = u'replace into crawl_infomation values ("'+check_date+'","total",'+str(totalArticle)+','+str(totalComment)+')'
+cur.execute(sql)
+conn.commit()
+
+print info
+
+
 
 #send a email
 me="BDIManager"+"<"+mail_user+"@"+mail_postfix+">"  
-msg = MIMEText(info + pt.get_string(),_subtype='plain',_charset='utf-8')  
+msg = MIMEText(info,_subtype='plain',_charset='utf-8')  
 msg['Subject'] = "Crawler daily report " + check_date
 msg['From'] = me  
 msg['To'] = ";".join(mailto_list)  
