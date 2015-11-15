@@ -13,6 +13,8 @@ from tutorial.spiders.ce_spider import CeSpider
 from tutorial.items import CeArticleItem
 from tutorial.spiders.xinhua_spider import XinhuaSpider
 from tutorial.items import GlobaltimesArticleItem, GlobaltimesCommentItem
+from tutorial.spiders.yahoonews_spider import YahoonewsSpider
+from tutorial.items import YahoonewsArticleItem, YahoonewsCommentItem
 
 
 # Define your item pipelines here
@@ -57,6 +59,10 @@ class MySQLPipeline(object):
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
         elif isinstance(spider, GlobaltimesSpider):
+            self.db_name = 'internetNews'
+            self.db_user = 'mers_hwyun'
+            self.db_pw = 'buECAs5ePudeB92R'
+        elif isinstance(spider, YahoonewsSpider):
             self.db_name = 'internetNews'
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
@@ -115,6 +121,10 @@ class MySQLPipeline(object):
             table_name = 'articles_globaltimes'
         elif isinstance(item, GlobaltimesCommentItem):
             table_name = 'comments_globaltimes'
+        elif isinstance(item, YahoonewsArticleItem):
+            table_name = 'articles_yahoonews'
+        elif isinstance(item, YahoonewsCommentItem):
+            table_name = 'comments_yahoonews'
         sql = u'insert into ' + table_name + ' ('
         for key in item.keys():
             sql += key
