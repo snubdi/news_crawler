@@ -149,3 +149,14 @@ class YahoonewsCommentItem(scrapy.Item):
     contents = scrapy.Field()
     comment_id = scrapy.Field()
 
+class SankeiArticleItem(scrapy.Item):
+    aid = scrapy.Field()
+    #oid = scrapy.Field()
+    date =scrapy.Field()
+    agency = scrapy.Field()
+    title = scrapy.Field()
+    contents = scrapy.Field()
+    url = scrapy.Field()
+    #referer = scrapy.Field()
+    category = scrapy.Field()
+    video = scrapy.Field()
