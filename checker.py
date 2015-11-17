@@ -10,7 +10,7 @@ from prettytable import PrettyTable
 
 
 #target medias
-media_list = ['xinhua','163','naver','people','globaltimes','ce','yahoonews']
+media_list = ['xinhua','163','naver','people','globaltimes','ce','yahoonews','sankei']
 #DB infomation
 db_host = 'localhost'
 db_name = 'internetNews'
@@ -49,6 +49,8 @@ for media in media_list:
     totalArticle += articleCount
     if media == 'ce' :
         commentCount = 0
+    elif media == 'sankei' :
+        commentCount = 0
     else:
         sql = u'select count(*) from comments_'+media+' where  date(date) = "' + check_date + u'"'
         cur.execute(sql)
@@ -67,7 +69,6 @@ cur.execute(sql)
 conn.commit()
 
 print info
-
 
 #send a email
 me="BDIManager"+"<"+mail_user+"@"+mail_postfix+">"
