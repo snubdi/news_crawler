@@ -10,7 +10,7 @@ from prettytable import PrettyTable
 
 
 #target medias
-media_list = ['xinhua','163','naver','people','globaltimes','ce','yahoonews','sankei']
+media_list = ['xinhua','163','naver','people','globaltimes','ce','yahoonews','sankei','yomiuri']
 #DB infomation
 db_host = 'localhost'
 db_name = 'internetNews'
