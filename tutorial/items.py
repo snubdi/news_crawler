@@ -15,6 +15,12 @@ class TutorialItem(scrapy.Item):
     # name = scrapy.Field()
     pass
 
+class YomiuriArticleItem(scrapy.Item):
+    aid = scrapy.Field()
+    date = scrapy.Field()
+    title = scrapy.Field()
+    contents = scrapy.Field()
+    url = scrapy.Field()
 class XinhuaCommentItem(scrapy.Item):
     date = scrapy.Field()
     aid = scrapy.Field()

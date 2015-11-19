@@ -14,6 +14,7 @@ from tutorial.items import CeArticleItem
 from tutorial.spiders.xinhua_spider import XinhuaSpider
 from tutorial.items import GlobaltimesArticleItem, GlobaltimesCommentItem
 from tutorial.spiders.yahoonews_spider import YahoonewsSpider
+from tutorial.spiders.yomiuri_spider import YomiuriSpider
 from tutorial.items import YahoonewsArticleItem, YahoonewsCommentItem
 from tutorial.spiders.sankei_spider import SankeiSpider
 from tutorial.items import SankeiArticleItem
@@ -68,6 +69,10 @@ class MySQLPipeline(object):
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
         elif isinstance(spider, SankeiSpider):
+            self.db_name = 'internetNews'
+            self.db_user = 'mers_hwyun'
+            self.db_pw = 'buECAs5ePudeB92R'
+        elif isinstance(spider, YomiuriSpider):
             self.db_name = 'internetNews'
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
@@ -132,6 +137,8 @@ class MySQLPipeline(object):
             table_name = 'comments_yahoonews'
         elif isinstance(item, SankeiArticleItem):
             table_name = 'articles_sankei'
+        elif isinstance(item, YomiuriArticleItem):
+            table_name = 'articles_yomiuri'
         sql = u'insert into ' + table_name + ' ('
         for key in item.keys():
             sql += key
