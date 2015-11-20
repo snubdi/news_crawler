@@ -51,6 +51,8 @@ for media in media_list:
         commentCount = 0
     elif media == 'sankei' :
         commentCount = 0
+    elif media == 'yomiuri' :
+        commentCount = 0
     else:
         sql = u'select count(*) from comments_'+media+' where  date(date) = "' + check_date + u'"'
         cur.execute(sql)
