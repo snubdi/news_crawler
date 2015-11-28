@@ -15,6 +15,30 @@ class TutorialItem(scrapy.Item):
     # name = scrapy.Field()
     pass
 
+class Naver2ArticleItem(scrapy.Item):
+    aid = scrapy.Field()
+    oid = scrapy.Field()
+    date = scrapy.Field()
+    start_date = scrapy.Field()
+    end_date = scrapy.Field()
+    agency = scrapy.Field()
+    title = scrapy.Field()
+    contents = scrapy.Field()
+    url = scrapy.Field()
+    keyword = scrapy.Field()
+
+class DaumArticleItem(scrapy.Item):
+    aid = scrapy.Field()
+    oid = scrapy.Field()
+    date = scrapy.Field()
+    start_date = scrapy.Field()
+    end_date = scrapy.Field()
+    agency = scrapy.Field()
+    title = scrapy.Field()
+    contents = scrapy.Field()
+    url = scrapy.Field()
+    keyword = scrapy.Field()
+
 class YomiuriArticleItem(scrapy.Item):
     aid = scrapy.Field()
     date = scrapy.Field()
@@ -133,7 +157,7 @@ class GlobaltimesCommentItem(scrapy.Item):
     #dislike_count = scrapy.Field()
     contents = scrapy.Field()
     comment_id = scrapy.Field()
-    
+
 class YahoonewsArticleItem(scrapy.Item):
     aid = scrapy.Field()
     #oid = scrapy.Field()
@@ -145,7 +169,7 @@ class YahoonewsArticleItem(scrapy.Item):
     #referer = scrapy.Field()
     category = scrapy.Field()
     video = scrapy.Field()
-    
+
 class YahoonewsCommentItem(scrapy.Item):
     date = scrapy.Field()
     aid = scrapy.Field()

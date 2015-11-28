@@ -3,6 +3,12 @@
 import re
 import MySQLdb
 from tutorial.items import *
+
+from tutorial.spiders.naver import NaverSpider
+from tutorial.items import Naver2ArticleItem
+from tutorial.spiders.daum import DaumSpider
+from tutorial.items import DaumArticleItem
+
 from tutorial.spiders.netease_spider_byday import NeteaseSpiderByDay
 from tutorial.spiders.netease_spider import NeteaseSpider
 from tutorial.spiders.naver_quick_spider import NaverQuickSpider
@@ -82,6 +88,14 @@ class MySQLPipeline(object):
             self.db_name = 'internetNews'
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
+        elif isinstance(spider, NaverSpider):
+            self.db_name = 'internetNews'
+            self.db_user = 'mers_hwyun'
+            self.db_pw = 'buECAs5ePudeB92R'
+        elif isinstance(spider, DaumSpider):
+            self.db_name = 'internetNews'
+            self.db_user = 'mers_hwyun'
+            self.db_pw = 'buECAs5ePudeB92R'
         try:
             self.conn = MySQLdb.connect(
                     host = self.db_host,
@@ -147,6 +161,10 @@ class MySQLPipeline(object):
             table_name = 'articles_yomiuri'
         elif isinstance(item, AsahiArticleItem):
             table_name = 'articles_asahi'
+        elif isinstance(item, Naver2ArticleItem):
+            table_name = 'compare_naver'
+        elif isinstance(item, DaumArticleItem):
+            table_name = 'compare_daum'
         sql = u'insert into ' + table_name + ' ('
         for key in item.keys():
             sql += key
