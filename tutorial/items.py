@@ -26,6 +26,7 @@ class Naver2ArticleItem(scrapy.Item):
     contents = scrapy.Field()
     url = scrapy.Field()
     keyword = scrapy.Field()
+    related_news = scrapy.Field()
 
 class DaumArticleItem(scrapy.Item):
     aid = scrapy.Field()
@@ -38,6 +39,7 @@ class DaumArticleItem(scrapy.Item):
     contents = scrapy.Field()
     url = scrapy.Field()
     keyword = scrapy.Field()
+    related_news = scrapy.Field()
 
 class YomiuriArticleItem(scrapy.Item):
     aid = scrapy.Field()

@@ -89,11 +89,11 @@ class MySQLPipeline(object):
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
         elif isinstance(spider, NaverSpider):
-            self.db_name = 'internetNews'
+            self.db_name = 'mers_hwyun'
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
         elif isinstance(spider, DaumSpider):
-            self.db_name = 'internetNews'
+            self.db_name = 'mers_hwyun'
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
         try:
