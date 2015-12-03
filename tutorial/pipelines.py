@@ -26,6 +26,8 @@ from tutorial.spiders.sankei_spider import SankeiSpider
 from tutorial.items import SankeiArticleItem
 from tutorial.spiders.asahi_spider import AsahiSpider
 from tutorial.items import AsahiArticleItem
+from tutorial.spiders.nikkei_spider import NikkeiSpider
+from tutorial.items import NikkeiArticleItem
 
 # Define your item pipelines here
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -94,6 +96,10 @@ class MySQLPipeline(object):
             self.db_pw = 'buECAs5ePudeB92R'
         elif isinstance(spider, DaumSpider):
             self.db_name = 'mers_hwyun'
+            self.db_user = 'mers_hwyun'
+            self.db_pw = 'buECAs5ePudeB92R'
+        elif isinstance(spider, NikkeiSpider):
+            self.db_name = 'internetNews'
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
         try:
@@ -165,6 +171,8 @@ class MySQLPipeline(object):
             table_name = 'compare_naver'
         elif isinstance(item, DaumArticleItem):
             table_name = 'compare_daum'
+        elif isinstance(item, NikkeiArticleItem):
+            table_name = 'articles_nikkei'
         sql = u'insert into ' + table_name + ' ('
         for key in item.keys():
             sql += key
