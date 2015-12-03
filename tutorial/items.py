@@ -15,6 +15,13 @@ class TutorialItem(scrapy.Item):
     # name = scrapy.Field()
     pass
 
+class MainichiArticleItem(scrapy.Item):
+    aid = scrapy.Field()
+    date = scrapy.Field()
+    title = scrapy.Field()
+    contents = scrapy.Field()
+    url = scrapy.Field()
+
 class Naver2ArticleItem(scrapy.Item):
     aid = scrapy.Field()
     oid = scrapy.Field()
