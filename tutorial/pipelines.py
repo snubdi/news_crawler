@@ -162,9 +162,9 @@ class MySQLPipeline(object):
         elif isinstance(item, AsahiArticleItem):
             table_name = 'articles_asahi'
         elif isinstance(item, Naver2ArticleItem):
-            table_name = 'compare_naver'
+            table_name = 'compare_naver_1'
         elif isinstance(item, DaumArticleItem):
-            table_name = 'compare_daum'
+            table_name = 'compare_daum_1'
         sql = u'insert into ' + table_name + ' ('
         for key in item.keys():
             sql += key

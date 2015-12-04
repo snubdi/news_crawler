@@ -90,59 +90,59 @@ class NaverSpider(scrapy.Spider):
 
             #cnt = 0
             print response.xpath('//div[@class="srch_result_area"]//ul[@class="srch_lst"]/li')
-            for news_article in response.xpath('//div[@class="srch_result_area"]//ul[@class="srch_lst"]/li'):
-                
-                try:
-                    article = Naver2ArticleItem()
-                    # news agency
-                    article['agency'] = news_article.xpath('//div[@class="info"]//span[@class="press"]/text()').extract()[0]
-                    # naver news link
-                    
-                    news_url = news_article.xpath('div/a/@href').extract()[0]
-                    article['url'] = news_url
-                    # news title
-                    article['title'] = ''.join(news_article.xpath('//div[@class="ct"]//text()').extract())
-                    # news date
-                    article['date'] = news_article.xpath('//div[@class="info"]//span[@class="time"]/text()').extract()[0].replace('.','-')
-                    # start date
-                    article['start_date'] = self.s_date
-                    # end date
-                    article['end_date'] = self.e_date
-                    # key word
-                    article['keyword'] = self.k_word
-                    yield article
-                except Exception, e:
-                    print 'ERROR!!!!!!!!!!!!!  URL :' + news_url
-                    print traceback.print_exc(file = sys.stdout)
-                    pass
-            
-            for related_article in response.xpath('//div[@class="related_group"]/ul/li'):
-                try:
-                    article = Naver2ArticleItem()
-                    # news agency
-                    article['agency'] = related_article.xpath('//p[@class="info"]//span[@class="press"]/text()').extract()[0]
-                    # news link
-                    
-                    news_url = related_article.xpath('a/@href').extract()[0]
-                    article['url'] = news_url
-                    # news title
-                    article['title'] = ''.join(related_article.xpath('a//text()').extract())
-                    # news date
-                    article['date'] = related_article.xpath('//p[@class="info"]//span[@class="time"]/text()').extract()[0].replace('.','-')
-                    # start date
-                    article['start_date'] = self.s_date
-                    # end date
-                    article['end_date'] = self.e_date
-                    # key word
-                    article['keyword'] = self.k_word
-                    # related news
-                    article['related_news'] = 'Y'
-                    yield article
-                    
-                except Exception, e:
-                    print 'ERROR!!!!!!!!!!!!!  URL :' + news_url
-                    print traceback.print_exc(file = sys.stdout)
-                    pass
+            news_article = response.xpath('//div[@class="srch_result_area"]//ul[@class="srch_lst"]/li')
+
+            try:
+                article = Naver2ArticleItem()
+                # news agency
+                article['agency'] = news_article.xpath('//div[@class="info"]//span[@class="press"]/text()').extract()[0]
+                # naver news link
+
+                news_url = news_article.xpath('div/a/@href').extract()[0]
+                article['url'] = news_url
+                # news title
+                article['title'] = ''.join(news_article.xpath('//div[@class="ct"]//text()').extract())
+                # news date
+                article['date'] = news_article.xpath('//div[@class="info"]//span[@class="time"]/text()').extract()[0].replace('.','-')
+                # start date
+                article['start_date'] = self.s_date
+                # end date
+                article['end_date'] = self.e_date
+                # key word
+                article['keyword'] = self.k_word
+                yield article
+            except Exception, e:
+                print 'ERROR!!!!!!!!!!!!!  URL :' + news_url
+                print traceback.print_exc(file = sys.stdout)
+                pass
+
+            related_article = response.xpath('//div[@class="related_group"]/ul/li')
+            try:
+                article = Naver2ArticleItem()
+                # news agency
+                article['agency'] = related_article.xpath('//p[@class="info"]//span[@class="press"]/text()').extract()[0]
+                # news link
+
+                news_url = related_article.xpath('a/@href').extract()[0]
+                article['url'] = news_url
+                # news title
+                article['title'] = ''.join(related_article.xpath('a//text()').extract())
+                # news date
+                article['date'] = related_article.xpath('//p[@class="info"]//span[@class="time"]/text()').extract()[0].replace('.','-')
+                # start date
+                article['start_date'] = self.s_date
+                # end date
+                article['end_date'] = self.e_date
+                # key word
+                article['keyword'] = self.k_word
+                # related news
+                article['related_news'] = 'Y'
+                yield article
+
+            except Exception, e:
+                print 'ERROR!!!!!!!!!!!!!  URL :' + news_url
+                print traceback.print_exc(file = sys.stdout)
+                pass
 
 
 

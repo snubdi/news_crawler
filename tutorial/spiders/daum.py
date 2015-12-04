@@ -72,60 +72,61 @@ class DaumSpider(scrapy.Spider):
 
             #cnt = 0
             #news_list = response.css('div.coll_cont > li > div.wrap_cont')
-            news_list = response.xpath('//*[@id="clusterResultUL"]/li')
+            news_article = response.xpath('//*[@id="clusterResultUL"]/li')
             #news_list_related = response.xpath('*[@id="clusterResultUL"]//div[@class="wrap_cont"]/div/div[@class="related_news"]/dl/dd')
-            news_list_related = response.xpath('//*[@id="clusterResultUL"]/li/div[2]/div/div[2]//dl/dd')
-            for news_article in news_list:
-                try:
-                    article = DaumArticleItem()
-                    # news agency
-                    article['agency'] = news_article.xpath('.//div[2]/div/span/text()[2]').extract()[0]
+            #news_list_related = response.xpath('//*[@id="clusterResultUL"]/li/div[2]/div/div[2]//dl/dd')
+            #for news_article in news_list:
+            try:
+                article = DaumArticleItem()
+                # news agency
+                article['agency'] = news_article.xpath('.//div[2]/div/span/text()[2]').extract()[0]
 
-                    # news link
-                    news_url = news_article.xpath('.//a/@href').extract()[0]
+                # news link
+                news_url = news_article.xpath('.//a/@href').extract()[0]
 
-                    # news_title
-                    article['title'] = ''.join(news_article.xpath('.//a/text()').extract())
+                # news_title
+                article['title'] = ''.join(news_article.xpath('.//a/text()').extract())
 
-                    # news date
-                    article['date'] = news_article.xpath('.//div[2]/div/span[1]/text()[1]').extract()[0]
+                # news date
+                article['date'] = news_article.xpath('.//div[2]/div/span[1]/text()[1]').extract()[0]
 
-                    article['start_date'] = self.s_date
-                    article['end_date'] = self.e_date
-                    article['keyword'] = self.k_word
-                    article['url'] = news_url
+                article['start_date'] = self.s_date
+                article['end_date'] = self.e_date
+                article['keyword'] = self.k_word
+                article['url'] = news_url
 
-                    yield article
-                except Exception, e:
-                    print 'ERROR!!!!!!!!!!!!!  URL :'
-                    print traceback.print_exc(file = sys.stdout)
-                    pass
+                yield article
+            except Exception, e:
+                print 'ERROR!!!!!!!!!!!!!  URL :'
+                print traceback.print_exc(file = sys.stdout)
+                pass
             #Parse related news
-            for news_article_related in news_list_related:
-                try:
-                    article = DaumArticleItem()
-                    # news agency
-                    article['agency'] = news_article_related.xpath('.//span/text()[2]').extract()[0].strip()
-                    # news link
-                    news_url = news_article_related.xpath('a/@href').extract()[0]
-                    #news_url = news_article_related.xpath('.//div[@class="wrap_cont"]/div/div[@class="related_news"]/dl/dd/a/@href').extract()[0]
-                    # news_title
+            #for news_article_related in news_list_related:
+            news_article_related = response.xpath('//*[@id="clusterResultUL"]/li/div[2]/div/div[2]//dl/dd')
+            try:
+                article = DaumArticleItem()
+                # news agency
+                article['agency'] = news_article_related.xpath('.//span/text()[2]').extract()[0].strip()
+                # news link
+                news_url = news_article_related.xpath('a/@href').extract()[0]
+                #news_url = news_article_related.xpath('.//div[@class="wrap_cont"]/div/div[@class="related_news"]/dl/dd/a/@href').extract()[0]
+                # news_title
 
-                    #article['title'] = ''.join(news_article_related.xpath('.//div[@class="wrap_cont"]/div/div[@class="related_news"]/dl/dd/a/text()').extract())
-                    article['title'] = ''.join(news_article_related.xpath('a/text()').extract())
+                #article['title'] = ''.join(news_article_related.xpath('.//div[@class="wrap_cont"]/div/div[@class="related_news"]/dl/dd/a/text()').extract())
+                article['title'] = ''.join(news_article_related.xpath('a/text()').extract())
 
-                    article['date'] = news_article_related.xpath('.//span/text()[1]').extract()[0]
+                article['date'] = news_article_related.xpath('.//span/text()[1]').extract()[0]
 
-                    article['start_date'] = self.s_date
-                    article['end_date'] = self.e_date
-                    article['keyword'] = self.k_word
-                    article['url'] = news_url
-                    article['related_news'] = 'Y'
+                article['start_date'] = self.s_date
+                article['end_date'] = self.e_date
+                article['keyword'] = self.k_word
+                article['url'] = news_url
+                article['related_news'] = 'Y'
 
 
-                    yield article
-                except Exception, e:
-                    print 'ERROR!!!!!!!!!!!!!  URL :'
-                    print traceback.print_exc(file = sys.stdout)
-                    pass
+                yield article
+            except Exception, e:
+                print 'ERROR!!!!!!!!!!!!!  URL :'
+                print traceback.print_exc(file = sys.stdout)
+                pass
 
