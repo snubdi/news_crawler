@@ -4,11 +4,6 @@ import re
 import MySQLdb
 from tutorial.items import *
 
-from tutorial.spiders.naver import NaverSpider
-from tutorial.items import Naver2ArticleItem
-from tutorial.spiders.daum import DaumSpider
-from tutorial.items import DaumArticleItem
-
 from tutorial.spiders.netease_spider_byday import NeteaseSpiderByDay
 from tutorial.spiders.netease_spider import NeteaseSpider
 from tutorial.spiders.naver_quick_spider import NaverQuickSpider
@@ -26,6 +21,9 @@ from tutorial.spiders.sankei_spider import SankeiSpider
 from tutorial.items import SankeiArticleItem
 from tutorial.spiders.asahi_spider import AsahiSpider
 from tutorial.items import AsahiArticleItem
+from tutorial.spiders.nikkei_spider import NikkeiSpider
+from tutorial.items import NikkeiArticleItem
+from tutorial.spiders.mainichi_spider import MainichiSpider
 
 # Define your item pipelines here
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -88,12 +86,12 @@ class MySQLPipeline(object):
             self.db_name = 'internetNews'
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
-        elif isinstance(spider, NaverSpider):
-            self.db_name = 'mers_hwyun'
+        elif isinstance(spider, NikkeiSpider):
+            self.db_name = 'internetNews'
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
-        elif isinstance(spider, DaumSpider):
-            self.db_name = 'mers_hwyun'
+        elif isinstance(spider, MainichiSpider):
+            self.db_name = 'internetNews'
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
         try:
@@ -161,10 +159,10 @@ class MySQLPipeline(object):
             table_name = 'articles_yomiuri'
         elif isinstance(item, AsahiArticleItem):
             table_name = 'articles_asahi'
-        elif isinstance(item, Naver2ArticleItem):
-            table_name = 'compare_naver_1'
-        elif isinstance(item, DaumArticleItem):
-            table_name = 'compare_daum_1'
+        elif isinstance(item, NikkeiArticleItem):
+            table_name = 'articles_nikkei'
+        elif isinstance(item, MainichiArticleItem):
+            table_name = 'articles_mainichi'
         sql = u'insert into ' + table_name + ' ('
         for key in item.keys():
             sql += key
