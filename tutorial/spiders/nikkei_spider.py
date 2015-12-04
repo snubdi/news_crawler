@@ -1,24 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import sys, traceback
-import re
 import time
-import json
-import urllib, urllib2
-import time
-from datetime import datetime, timedelta
-from urlparse import urlparse, parse_qs
 import scrapy
-from tutorial.items import *
 import MySQLdb
 from scrapy.http import Request, FormRequest
-from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
-from scrapy.contrib.spiders import CrawlSpider, Rule
-from scrapy.contrib.linkextractors import LinkExtractor
 from tutorial.items import NikkeiArticleItem
-from _curses import meta
-#from etao.lstData import lstData
-from selenium import webdriver
+
 
 class NikkeiSpider(scrapy.Spider):
     name = 'nikkei'
@@ -90,12 +78,7 @@ class NikkeiSpider(scrapy.Spider):
             clg = response.xpath('//input[@name="clg"]/@value').extract()[0]
             dps = response.xpath('//input[@name="dps"]/@value').extract()[0]
             xp0 = response.xpath('//input[@name="xp0"]/@value').extract()[0]
-            print rpid
-            print pxep
-            print rtur
-            print clg
-            print dps
-            print xp0
+
             #post form data
             return [FormRequest(url = "https://id.nikkei.com/lounge/ep/authonly",
                                 meta = {'cookiejar': response.meta['cookiejar']},
