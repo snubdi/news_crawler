@@ -13,7 +13,7 @@ from tutorial.items import MainichiArticleItem
 import MySQLdb
 from scrapy.http import Request, FormRequest
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
-from scrapy.contrib.spiders import CrawlSpider, Rule
+from scrapy.spiders import CrawlSpider, Rule
 from _curses import meta
 
 
@@ -66,7 +66,7 @@ class MainichiSpider(scrapy.Spider):
                 news_title = ''.join(news_title)
                 # news date
                 news_date = news_article.xpath('.//span[@class="date"]/text()').extract()[0]
-                print filter(unicode.isdigit, news_date)
+
                 news_date = time.strptime(filter(unicode.isdigit, news_date), '%Y%m%d%H%M')
                 news_date = time.strftime('%Y-%m-%d %H:%M:%S', news_date)
 
@@ -88,10 +88,12 @@ class MainichiSpider(scrapy.Spider):
 
         print 'read %s articles' % cnt
         print 'read %s page' % self.page
-        if self.page <= 20:
+        if self.page < 20:
             self.page += 1
             req = scrapy.Request(self.get_query_url(self.page), callback=self.parse, dont_filter=self.dont_filter)
             yield req
+        else:
+            return
 
     '''
     Retrieve the comment count link from a given news article.
