@@ -22,6 +22,7 @@ class MainichiSpider(scrapy.Spider):
     allowed_domains = ['mainichi.jp']
     start_urls = ['http://mainichi.jp/']
     dont_filter = False
+    page = 1
     '''
     Starting point.
     Request login page
@@ -36,8 +37,9 @@ class MainichiSpider(scrapy.Spider):
     Get the query url
     '''
 
-    def get_query_url(self):
-        return 'http://mainichi.jp/flash/'
+    @staticmethod
+    def get_query_url(page=1):
+        return 'http://mainichi.jp/flash/' + str(page)
 
     '''
     Starting point
@@ -48,28 +50,31 @@ class MainichiSpider(scrapy.Spider):
 
     def parse(self, response):
 
-        news_list = response.xpath('//div[@class="NewsArticle"]//ul[@class="MaiLink"]/li')
+        news_list = response.xpath('//section[@class="newslist"]//ul[@class="list-typeA typeA-date"]/li')
         cnt = 0
         for news_article in news_list:
             try:
                 # news link
-                news_url = news_article.xpath('.//a/@href').extract()[0]
+                news_url = 'http://mainichi.jp' + news_article.xpath('.//a/@href').extract()[0]
 
                 # news aid
                 news_aid = urlparse(news_url)[2]
-                news_aid = news_aid[news_aid.rfind("/") + 1:news_aid.find(".")]
+                news_aid = news_aid[news_aid.find("articles/") + 8:news_aid.find(".")].replace('/', '')
 
                 # news title
-                news_title = news_article.xpath('.//a/text()').extract()[0]
-
+                news_title = news_article.xpath('./a/text()').extract()
+                news_title = ''.join(news_title)
                 # news date
-                #news_date = news_article.xpath('.//span[@class="update"]/text()').extract()[0]
+                news_date = news_article.xpath('.//span[@class="date"]/text()').extract()[0]
+                print filter(unicode.isdigit, news_date)
+                news_date = time.strptime(filter(unicode.isdigit, news_date), '%Y%m%d%H%M')
+                news_date = time.strftime('%Y-%m-%d %H:%M:%S', news_date)
 
                 article = MainichiArticleItem()
                 article['url'] = news_url
                 article['aid'] = news_aid
                 article['title'] = news_title
-                #article['date'] = news_date
+                article['date'] = news_date
 
                 req = scrapy.Request(news_url, callback=self.parse_news, dont_filter=self.dont_filter)
                 req.meta['article'] = article
@@ -82,6 +87,11 @@ class MainichiSpider(scrapy.Spider):
                 # pass
 
         print 'read %s articles' % cnt
+        print 'read %s page' % self.page
+        if self.page <= 20:
+            self.page += 1
+            req = scrapy.Request(self.get_query_url(self.page), callback=self.parse, dont_filter=self.dont_filter)
+            yield req
 
     '''
     Retrieve the comment count link from a given news article.
@@ -92,23 +102,13 @@ class MainichiSpider(scrapy.Spider):
     def parse_news(self, response):
 
         article = response.meta['article']
-
-        # news date
-        #article['date'] = response.xpath('.//div[@class="NewsArticle"]//p[@class="Credit"]/text()').extract()[0]
-        news_date = response.xpath('.//meta[@name="firstcreate"]/@content').extract()
-        if len(news_date) == 0:
-            news_date = ''
-        else:
-            news_date = time.strptime(news_date[0], '%Y/%m/%d %H:%M:%S')
-            news_date = time.strftime('%Y-%m-%d %H:%M:%S', news_date)
         # news content
         news_content = response.xpath(
-            './/div[@class="NewsArticle"]//div[@class="NewsBody clr"]/p/text()').extract()
+            './/div[@id="main"]//div[@class="main-text"]/p[@class="txt"]/text()').extract()
         news_content = ' '.join(news_content).strip()
 
         article['contents'] = news_content
-        article['date'] = news_date
-        print article
+        #print article
         yield article
 
     def parse_date(self, orig_date_str):
