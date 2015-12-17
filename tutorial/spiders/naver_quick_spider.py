@@ -59,7 +59,7 @@ class NaverQuickSpider(scrapy.Spider):
         # next page end condition
         next_button = response.xpath('//td[@class="content"]//div[@class="paging"]/a[@class="next"]')
         #if self.page_cnt >10:
-        if len(next_button) == 0 and self.page_cnt >= int(response.xpath('//td[@class="content"]//div[@class="paging"]/a/text()').extract()[-1]):
+        if self.page_cnt > 200 or(len(next_button) == 0 and self.page_cnt >= int(response.xpath('//td[@class="content"]//div[@class="paging"]/a/text()').extract()[-1])):
             print "!!!!!!!!!!!!!get max page" + str(self.page_cnt)
             return
         # determine whether to go ahead with parse or not
@@ -181,10 +181,10 @@ class NaverQuickSpider(scrapy.Spider):
     def parse_comment_count(self, response):
         json_response = json.loads(response.body)
         comment_count = int(json_response['message']['result']['count'])
-        self.update_count('comments', comment_count)
+        #self.update_count('comments', comment_count)
 
         yield response.meta['article']
-        self.update_count('ayield', 1)
+        #self.update_count('ayield', 1)
 
         if comment_count > 0:
 
@@ -284,8 +284,8 @@ class NaverQuickSpider(scrapy.Spider):
         try:
             conn = MySQLdb.connect(
                     host = 'localhost',
-                    user = 'mers',
-                    passwd = 'Kb459CKS7nQLsHbD',
+                    user = 'mers_hwyun',
+                    passwd = 'buECAs5ePudeB92R',
                     charset = 'utf8'
                     )
             cur = conn.cursor()
