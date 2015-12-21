@@ -11,89 +11,73 @@ from urlparse import urlparse, parse_qs
 import scrapy
 from tutorial.items import *
 import MySQLdb
-
+from scrapy.http import Request, FormRequest
+from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
+from pyvirtualdisplay import Display
 
 class YomiuriSpider(scrapy.Spider):
     name = 'yomiuri'
-    start_urls = []
+    start_urls = ["https://premium.yomiuri.co.jp"]
     dont_filter = False
-    '''
-    Constructor
-    '''
 
-    def __init__(self, *args, **kwargs):
-
-        self.start_urls = [self.get_query_url()]
-        super(YomiuriSpider, self).__init__(*args, **kwargs)
-
-    '''
-    Get the query url
-    '''
-
-    def get_query_url(self):
-        return 'http://www.yomiuri.co.jp/latestnews/'
-
-    '''
-    Starting point
-    Retrieve the news link from the list of search results.
-    Args:
-     response - the response object pertaining to the search results page
-    '''
+    def __init__(self):
+        # Virtual Display for Running Selenium
+        try:
+            self.display = Display(visible=0, size=(1280, 1024))
+            self.display.start()
+            profile = webdriver.FirefoxProfile()
+            profile.native_events_enabled = True
+            self.driver = webdriver.Firefox(profile)
+            self.driver.get("https://premium.yomiuri.co.jp/login.jsp?appType=PC&url=http%3A%2F%2Fpremium.yomiuri.co.jp%2Fpc%2F%23%2Fcheck%2Flist_NEWS%25255fMAIN")
+            id = self.driver.find_element_by_xpath('//input[@name="id"]')
+            password = self.driver.find_element_by_xpath('//input[@name="password"]')
+            id.send_keys("ayumis33@hotmail.com")
+            password.send_keys("ayumi2012")
+            login = self.driver.find_element_by_xpath('//form[@id="frm"]')
+            login.submit()
+            time.sleep(5)
+        except:
+            print "!!!!!!!!!!!!!!!!error!!!!!!!!!!!!!!!!"
 
     def parse(self, response):
+        try:
+            self.driver.get('http://premium.yomiuri.co.jp/pc/#!/list_NEWS%255fMAIN')
+            #print self.driver.title
+            c_list = self.driver.find_elements_by_xpath(
+                '//div[@class="yp_layout_template"]/div[@class="loft_article_sttl"]/a')
+            c_list = [c.get_attribute("href") for c in c_list]
+            for c in c_list:
+                #self.parse_page(c)
+                self.driver.get(c)
+                time.sleep(5)
+                url_list = self.driver.find_elements_by_xpath('//a[@class="yp_article_link"]')
+                news_urls = [news.get_attribute("href") for news in url_list]
+                for u in news_urls:
+                    self.driver.get(u)
+                    time.sleep(2)
+                    news_aid = u[u.find(u'/news_201')+1:u.find(u'/list_NEWS')]
+                    news_title = self.driver.find_element_by_xpath('//div[@class="yp_article_title"]').text
+                    news_date = self.driver.find_element_by_xpath('//div[@class="yp_article_credit"]').text
+                    news_date = time.strftime('%Y-%m-%d %H:%M:%S', self.parse_date(news_date))
+                    news_content = self.driver.find_elements_by_xpath('//div[@class="yp_article_body"]')
+                    news_content = ''.join([content.text for content in news_content])
+                    #print news_content
+                    article = YomiuriArticleItem()
+                    article['url'] = u
+                    article['aid'] = news_aid
+                    article['title'] = news_title
+                    article['date'] = news_date
+                    article['contents'] = news_content
+                    #print article
+                    yield article
+        finally:
+            if self.driver != None:
+                self.driver.close()
+                self.driver.quit()
+            if self.display != None:
+                self.display.stop()
 
-        news_list = response.xpath('//ul[@class="list-common list-common-latest"]/li')
-        cnt = 0
-        for news_article in news_list:
-            try:
-                # news link
-                news_url = news_article.xpath('.//a/@href').extract()[0]
-                # news aid
-                news_aid = urlparse(news_url)[2]
-                news_aid = news_aid[news_aid.rfind("/")+1:news_aid.find(".")]
-
-                # news title
-                news_title = news_article.xpath('.//span[@class="headline"]/text()').extract()[0]
-
-                # news date
-                news_date = news_article.xpath('.//span[@class="update"]/text()').extract()[0]
-
-                article = YomiuriArticleItem()
-                article['url'] = news_url
-                article['aid'] = news_aid
-                article['title'] = news_title
-                article['date'] = news_date
-
-                req = scrapy.Request(news_url, callback=self.parse_news, dont_filter=self.dont_filter)
-                req.meta['article'] = article
-
-                yield req
-                cnt += 1
-            except Exception, e:
-                print 'ERROR!!!!!!!!!!!!!  URL :'
-                print traceback.print_exc(file=sys.stdout)
-                # pass
-
-        print 'read %s articles' % cnt
-
-    '''
-    Retrieve the comment count link from a given news article.
-    Args:
-     response - the response object pertaining to the news article page
-    '''
-
-    def parse_news(self, response):
-
-        article = response.meta['article']
-        news_date = time.strftime('%Y-%m-%d %H:%M:%S', self.parse_date(article['date']))
-        # news content
-        news_content = response.xpath('.//div[@class="article text-resizeable"]//p[@itemprop="articleBody"]/text()').extract()
-        news_content = ' '.join(news_content).strip()
-
-        article['contents'] = news_content
-        article['date'] = news_date
-        print article
-        yield article
 
     '''
     Parse a date string in the form of '2015.07.10 오후 2:39' and return a time object
@@ -104,8 +88,11 @@ class YomiuriSpider(scrapy.Spider):
     '''
 
     def parse_date(self, orig_date_str):
-
-        ctime = re.findall(r"\d+\.?\d*", orig_date_str)
-        new_time = time.strptime('-'.join(ctime), '%Y-%m-%d-%H-%M')
+        date_str = unicode(orig_date_str)
+        hour = date_str[date_str.find(u'日')+1:date_str.find(u'時')]
+        min = date_str[date_str.find(u'時')+1:date_str.find(u'分')]
+        time_str = date_str.replace(u'年', u'-').replace(u'月', u'-')
+        time_str = time_str[:time_str.find(u'日')]
+        time_str += " %02d:%02d" % (int(hour), int(min))
+        new_time = time.strptime(time_str, u'%Y-%m-%d %H:%M')
         return new_time
-
