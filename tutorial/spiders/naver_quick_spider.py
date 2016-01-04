@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 
 import sys, traceback
@@ -11,6 +12,10 @@ from urlparse import urlparse, parse_qs
 import scrapy
 from tutorial.items import NaverArticleItem, NaverCommentItem
 import MySQLdb
+from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
+from pyvirtualdisplay import Display
+from scrapy.http import TextResponse 
 
 class NaverQuickSpider(scrapy.Spider):
     name = 'Naver_quick'
@@ -21,7 +26,7 @@ class NaverQuickSpider(scrapy.Spider):
     e_date = ''
     c_date = ''
     page_cnt = 1
-    dont_filter = False
+    dont_filter = True
     agency_list = []
     '''
     Constructor
@@ -31,18 +36,23 @@ class NaverQuickSpider(scrapy.Spider):
         self.e_date = end_date
         self.c_date = check_date
         if check_date == '':
-            yesterday = datetime.now() + timedelta(days = -1)
+            yesterday = datetime.now() + timedelta(days = -2)
             self.c_date = yesterday.strftime("%Y%m%d")
             print self.c_date
         self.start_urls = [self.get_query_url(self.c_date, self.page_cnt)]
         super(NaverQuickSpider, self).__init__(*args, **kwargs)
+        self.display = Display(visible=0, size=(1280, 1024))
+        self.display.start()
+        profile = webdriver.FirefoxProfile()
+        profile.native_events_enabled = True
+        self.driver = webdriver.Firefox(profile)
 
     '''
     Get the query url
     '''
     def get_query_url(self, check_date, page):
         #qs = {'query': keyword}
-
+        
         return 'http://news.naver.com/main/list.nhn?sid1=001&mid=sec&mode=LSD&listType=paper' \
                 + '&date=' + check_date \
                 + '&page=' + str(page) \
@@ -59,7 +69,7 @@ class NaverQuickSpider(scrapy.Spider):
         # next page end condition
         next_button = response.xpath('//td[@class="content"]//div[@class="paging"]/a[@class="next"]')
         #if self.page_cnt >10:
-        if self.page_cnt > 200 or(len(next_button) == 0 and self.page_cnt >= int(response.xpath('//td[@class="content"]//div[@class="paging"]/a/text()').extract()[-1])):
+        if len(next_button) == 0 and self.page_cnt >= int(response.xpath('//td[@class="content"]//div[@class="paging"]/a/text()').extract()[-1]):
             print "!!!!!!!!!!!!!get max page" + str(self.page_cnt)
             return
         # determine whether to go ahead with parse or not
@@ -161,69 +171,42 @@ class NaverQuickSpider(scrapy.Spider):
         article['contents'] = contents
         article['date'] = date
 
-        # this is the hidden 'comment count' api used by naver
-        comment_check_url = 'http://m.news.naver.com/api/comment/count.json'
+        comment_url = response.url + '&m_view=1'
+        req = scrapy.Request(comment_url, callback = self.comment_parse, dont_filter = self.dont_filter)
+        req.meta['article'] = article 
+        yield req
 
-        comment_count_data = {
-            'gno' : 'news' + article['oid'] + ',' + article['aid']
-        }
+    def comment_parse(self, response):
+        print response.url
+        aid = response.meta['article']['aid']
+        date = response.meta['article']['date']
 
-        req = scrapy.FormRequest(comment_check_url, formdata = comment_count_data, callback = self.parse_comment_count, dont_filter = self.dont_filter)
-        req.meta['article'] = article
-
-        return req
-
-    '''
-    Retrieve comment count for a given news article.
-    Args:
-     response - the response object pertaining to the json response of the comment count api call
-    '''
-    def parse_comment_count(self, response):
-        json_response = json.loads(response.body)
-        comment_count = int(json_response['message']['result']['count'])
-        #self.update_count('comments', comment_count)
-
-        yield response.meta['article']
-        #self.update_count('ayield', 1)
-
-        if comment_count > 0:
-
-            # this is the hidden 'comment list' api used by naver
-            comment_url = 'http://m.news.naver.com/api/comment/list.json'
-
-            comment_data = {
-                'gno' : 'news' + response.meta['article']['oid'] + ',' + response.meta['article']['aid'],
-                'page': '1',
-                'sort': 'newest',
-                'pageSize': str(comment_count),
-                'serviceId' : 'news'
-            }
-
-            req = scrapy.FormRequest(comment_url, formdata = comment_data, callback = self.parse_comments, dont_filter = self.dont_filter)
-            req.meta['article'] = response.meta['article']
-            yield req
-
-    '''
-    Retrieve the list of comments for a given news article
-    Args:
-     response - the response object pertaining to the json response of the comment list api call
-    '''
-    def parse_comments(self, response):
-        json_response = json.loads(response.body)
-        for comment in json_response['message']['result']['commentReplies']:
-
-            new_time = self.parse_date(comment['sRegDate'])
-
-            comment_item = NaverCommentItem()
-            comment_item['date'] = time.strftime('%Y-%m-%d %H:%M:00', new_time)
-            comment_item['aid'] = response.meta['article']['aid']
-            comment_item['username'] = comment['userNickname']
-            comment_item['like_count'] = comment['goodCount']
-            comment_item['dislike_count'] = comment['badCount']
-            comment_item['contents'] = comment['content']
-
-            yield comment_item
-
+        self.driver.get(response.url)
+        time.sleep(3)
+        
+        while True:
+            button_more = self.driver.find_element_by_xpath('//a[@class="u_cbox_btn_more __cbox_page_button"]')
+            try:
+                button_more.click()   
+            except:
+                break  
+            
+        resp = TextResponse(url=self.driver.current_url, body=self.driver.page_source, encoding='utf-8')
+        for site in resp.xpath('.//ul[@class="u_cbox_list"]/li'):
+            username = site.xpath('.//span[@class="u_cbox_name"]/text()').extract()
+            like_count = site.xpath('.//em[@class="u_cbox_cnt_recomm"]/text()').extract()
+            dislike_count = site.xpath('.//em[@class="u_cbox_cnt_unrecomm"]/text()').extract()
+            contents = site.xpath('.//span[@class="u_cbox_contents"]/text()').extract()
+            comment = NaverCommentItem()
+            comment['aid'] = aid
+            comment['username'] = username
+            comment['like_count'] = like_count
+            comment['dislike_count'] = dislike_count
+            comment['contents'] = ''.join(contents)
+            comment['date'] = date
+            yield comment    
+                 
+        
     '''
     Parse a date string in the form of '2015.07.10 오후 2:39' and return a time object
     Args:
@@ -284,8 +267,8 @@ class NaverQuickSpider(scrapy.Spider):
         try:
             conn = MySQLdb.connect(
                     host = 'localhost',
-                    user = 'mers_hwyun',
-                    passwd = 'buECAs5ePudeB92R',
+                    user = 'mers',
+                    passwd = 'Kb459CKS7nQLsHbD',
                     charset = 'utf8'
                     )
             cur = conn.cursor()
