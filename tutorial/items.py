@@ -194,4 +194,3 @@ class NikkeiArticleItem(scrapy.Item):
     contents = scrapy.Field()
     url = scrapy.Field()
     category = scrapy.Field()
-

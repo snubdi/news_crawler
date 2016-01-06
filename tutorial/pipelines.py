@@ -94,6 +94,10 @@ class MySQLPipeline(object):
             self.db_name = 'internetNews'
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
+        elif isinstance(spider, GameSpider):
+            self.db_name = 'mers_zhwang'
+            self.db_user = 'mers_zhwang'
+            self.db_pw = 'Khhd7ALtc8XLhwVK'
         try:
             self.conn = MySQLdb.connect(
                     host = self.db_host,
