@@ -24,6 +24,8 @@ from tutorial.items import AsahiArticleItem
 from tutorial.spiders.nikkei_spider import NikkeiSpider
 from tutorial.items import NikkeiArticleItem
 from tutorial.spiders.mainichi_spider import MainichiSpider
+from tutorial.spiders.cnn_spider import CnnSpider
+from tutorial.items import CnnArticleItem
 
 # Define your item pipelines here
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -94,10 +96,10 @@ class MySQLPipeline(object):
             self.db_name = 'internetNews'
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
-        elif isinstance(spider, GameSpider):
-            self.db_name = 'mers_zhwang'
-            self.db_user = 'mers_zhwang'
-            self.db_pw = 'Khhd7ALtc8XLhwVK'
+        elif isinstance(spider, CnnSpider):
+            self.db_name = 'internetNews'
+            self.db_user = 'mers_hwyun'
+            self.db_pw = 'buECAs5ePudeB92R'
         try:
             self.conn = MySQLdb.connect(
                     host = self.db_host,
@@ -167,6 +169,8 @@ class MySQLPipeline(object):
             table_name = 'articles_nikkei'
         elif isinstance(item, MainichiArticleItem):
             table_name = 'articles_mainichi'
+        elif isinstance(item, CnnArticleItem):
+            table_name = 'articles_cnn'
         sql = u'insert into ' + table_name + ' ('
         for key in item.keys():
             sql += key

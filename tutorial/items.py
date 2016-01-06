@@ -194,3 +194,13 @@ class NikkeiArticleItem(scrapy.Item):
     contents = scrapy.Field()
     url = scrapy.Field()
     category = scrapy.Field()
+
+class CnnArticleItem(scrapy.Item):
+    aid = scrapy.Field()
+    date =scrapy.Field()
+    agency = scrapy.Field()
+    title = scrapy.Field()
+    contents = scrapy.Field()
+    url = scrapy.Field()
+    category = scrapy.Field()
+    video = scrapy.Field()
