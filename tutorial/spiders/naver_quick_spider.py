@@ -83,7 +83,7 @@ class NaverQuickSpider(scrapy.Spider):
                 
                 # news agency
                 agency = news_article.xpath('.//span[@class="writing"]/text()').extract()[0]
-                
+
                 if agency not in [u'경향신문',u'중앙일보',u'한겨레',u'동아일보',u'조선일보']:
                     continue
                 # naver news link
@@ -170,10 +170,10 @@ class NaverQuickSpider(scrapy.Spider):
         article['title'] = title
         article['contents'] = contents
         article['date'] = date
-
+        yield article
         comment_url = response.url + '&m_view=1'
         req = scrapy.Request(comment_url, callback = self.comment_parse, dont_filter = self.dont_filter)
-        req.meta['article'] = article 
+        req.meta['article'] = article
         yield req
 
     def comment_parse(self, response):
