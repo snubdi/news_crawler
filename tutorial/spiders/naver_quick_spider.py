@@ -53,7 +53,7 @@ class NaverQuickSpider(scrapy.Spider):
     def get_query_url(self, check_date, page):
         #qs = {'query': keyword}
         
-        return 'http://news.naver.com/main/list.nhn?sid1=001&mid=sec&mode=LSD&listType=paper' \
+        return 'http://news.naver.com/main/list.nhn?sid1=001&mid=sec&mode=LSD&' \
                 + '&date=' + check_date \
                 + '&page=' + str(page) \
                 
