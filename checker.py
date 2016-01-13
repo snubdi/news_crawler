@@ -10,7 +10,7 @@ from prettytable import PrettyTable
 
 
 #target medias
-media_list = ['xinhua','163','naver','people','globaltimes','ce','yahoonews','sankei','yomiuri','asahi','nikkei','mainichi','cnn']
+media_list = ['xinhua','163','naver','people','globaltimes','ce','yahoonews','sankei','yomiuri','asahi','nikkei','mainichi','cnn','msnbc','fox']
 #DB infomation
 db_host = 'localhost'
 db_name = 'internetNews'
@@ -59,6 +59,10 @@ for media in media_list:
     elif media == 'mainichi' :
         commentCount = 0
     elif media == 'cnn' :
+        commentCount = 0
+    elif media == 'msnbc' :
+        commentCount = 0
+    elif media == 'fox' :
         commentCount = 0
     else:
         sql = u'select count(*) from comments_'+media+' where  date(date) = "' + check_date + u'"'
