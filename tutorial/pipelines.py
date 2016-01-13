@@ -30,6 +30,8 @@ from tutorial.spiders.fox_spider import FoxSpider
 from tutorial.items import FoxArticleItem
 from tutorial.spiders.msnbc_spider import MsnbcSpider
 from tutorial.items import MsnbcArticleItem
+from tutorial.spiders.naver_summary_spider import NaverSummarySpider
+from tutorial.items import NaverSummaryItem
 
 # Define your item pipelines here
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -112,6 +114,10 @@ class MySQLPipeline(object):
             self.db_name = 'internetNews'
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
+        elif isinstance(spider, NaverSummarySpider):
+            self.db_name = 'internetNews'
+            self.db_user = 'mers_hwyun'
+            self.db_pw = 'buECAs5ePudeB92R'
         try:
             self.conn = MySQLdb.connect(
                     host = self.db_host,
@@ -187,6 +193,8 @@ class MySQLPipeline(object):
             table_name = 'articles_fox'
         elif isinstance(item, MsnbcArticleItem):
             table_name = 'articles_msnbc'
+        elif isinstance(item, NaverSummaryItem):
+            table_name = 'summary_naver'
         sql = u'insert into ' + table_name + ' ('
         for key in item.keys():
             sql += key
