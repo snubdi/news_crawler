@@ -39,7 +39,8 @@ class NeteaseSpider(scrapy.Spider):
         month = lastday[5:7]
         day = lastday[8:10]
         #return 'http://news.163.com/special/0001220O/news_json.js'
-        jsurl = 'http://snapshot.news.163.com/wgethtml/http+!!news.163.com!special!0001220O!news_json.js/'+year+'-'+month+'/'+day+'/0.js'
+        #jsurl = 'http://snapshot.news.163.com/wgethtml/http+!!news.163.com!special!0001220O!news_json.js/'+year+'-'+month+'/'+day+'/0.js'
+        jsurl = 'http://news.163.com/special/0001220O/news_json.js'
         return jsurl
     '''
     Starting point.
@@ -66,19 +67,30 @@ class NeteaseSpider(scrapy.Spider):
             month = lastday[5:7]
             day = lastday[8:10]
             #return 'http://news.163.com/special/0001220O/news_json.js'
-            jsurl = 'http://snapshot.news.163.com/wgethtml/http+!!news.163.com!special!0001220O!news_json.js/'+year+'-'+month+'/'+day+'/0.js'
+            #jsurl = 'http://snapshot.news.163.com/wgethtml/http+!!news.163.com!special!0001220O!news_json.js/'+year+'-'+month+'/'+day+'/0.js'
+            jsurl = 'http://news.163.com/special/0001220O/news_json.js'
             response = urllib2.urlopen(jsurl)
             html_gbk = response.read()
 
             # gbk-->utf8
             html_utf = html_gbk.decode("gbk").encode("utf-8")
-
+            #print html_utf
+            '''
             # transfer to std json format
             js = self.GetMiddleStr(html_utf,'var data={"category":','],[]]};')
             js_0 = js.replace('[','')
             js_1 = js_0.replace(']','')
             js_2 = js_1.replace('"news":','')
-            news_json ='[' + js_2 + ']'
+            js_3 = js_2.replace(',};','')
+            news_json ='[' + js_3 + ']'
+            '''
+            pos_js = html_utf.find('"news":[')
+            js = html_utf[pos_js + 9:]
+            js_2 = js.replace('[]]};', '')
+            js_3 = js_2.replace('],', ',')
+            js_4 = js_3.replace('[', '')
+            news_json = '[' + js_4[: -2] + ']'
+            print news_json
 
             # 'c':category  't':news title  'l':url  'p':time
             hjson = json.loads(news_json, encoding ="utf-8")
@@ -208,3 +220,4 @@ class NeteaseSpider(scrapy.Spider):
         req = scrapy.Request(next_comment_url, callback = self.parse_comment, dont_filter = self.dont_filter)
         req.meta['aid'] = aid
         yield req
+
