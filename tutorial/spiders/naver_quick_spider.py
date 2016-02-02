@@ -26,7 +26,7 @@ class NaverQuickSpider(scrapy.Spider):
     e_date = ''
     c_date = ''
     page_cnt = 1
-    dont_filter = True
+    dont_filter = False
     agency_list = []
     '''
     Constructor
@@ -36,7 +36,7 @@ class NaverQuickSpider(scrapy.Spider):
         self.e_date = end_date
         self.c_date = check_date
         if check_date == '':
-            yesterday = datetime.now() + timedelta(days = -2)
+            yesterday = datetime.now() + timedelta(days = -1)
             self.c_date = yesterday.strftime("%Y%m%d")
             print self.c_date
         self.start_urls = [self.get_query_url(self.c_date, self.page_cnt)]
@@ -46,13 +46,20 @@ class NaverQuickSpider(scrapy.Spider):
         profile = webdriver.FirefoxProfile()
         profile.native_events_enabled = True
         self.driver = webdriver.Firefox(profile)
-
+        
+    def __del__(self):
+        
+        self.driver.close()
+        self.driver.quit()
+        self.display.stop()
+        print '************************************************************************'
+        print 'CLOSED!!!'  
     '''
     Get the query url
     '''
     def get_query_url(self, check_date, page):
         #qs = {'query': keyword}
-        
+        #'http://news.naver.com/main/list.nhn?sid1=001&mid=sec&mode=LSD&listType=paper' \
         return 'http://news.naver.com/main/list.nhn?sid1=001&mid=sec&mode=LSD&' \
                 + '&date=' + check_date \
                 + '&page=' + str(page) \
@@ -177,13 +184,14 @@ class NaverQuickSpider(scrapy.Spider):
         yield req
 
     def comment_parse(self, response):
+        
+        #try:
         print response.url
         aid = response.meta['article']['aid']
         date = response.meta['article']['date']
-
         self.driver.get(response.url)
         time.sleep(3)
-        
+    
         while True:
             button_more = self.driver.find_element_by_xpath('//a[@class="u_cbox_btn_more __cbox_page_button"]')
             try:
@@ -193,7 +201,7 @@ class NaverQuickSpider(scrapy.Spider):
             
         resp = TextResponse(url=self.driver.current_url, body=self.driver.page_source, encoding='utf-8')
         for site in resp.xpath('.//ul[@class="u_cbox_list"]/li'):
-            username = site.xpath('.//span[@class="u_cbox_name"]/text()').extract()
+            username = site.xpath('.//span[@class="u_cbox_nick"]/text()').extract()
             like_count = site.xpath('.//em[@class="u_cbox_cnt_recomm"]/text()').extract()
             dislike_count = site.xpath('.//em[@class="u_cbox_cnt_unrecomm"]/text()').extract()
             contents = site.xpath('.//span[@class="u_cbox_contents"]/text()').extract()
@@ -204,8 +212,15 @@ class NaverQuickSpider(scrapy.Spider):
             comment['dislike_count'] = dislike_count
             comment['contents'] = ''.join(contents)
             comment['date'] = date
-            yield comment    
-                 
+            yield comment
+        '''   
+        finally:
+            if self.driver != None:
+                self.driver.close()
+                self.driver.quit()
+            if self.display != None:
+                self.display.stop()    
+         '''        
         
     '''
     Parse a date string in the form of '2015.07.10 오후 2:39' and return a time object
@@ -304,4 +319,3 @@ class NaverQuickSpider(scrapy.Spider):
             conn.close()
         except MySQLdb.Error, e:
             print 'MySQL error %d: %s' % (e.args[0], e.args[1])
-
