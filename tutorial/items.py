@@ -222,12 +222,16 @@ class FoxArticleItem(scrapy.Item):
 
 class NaverSummaryItem(scrapy.Item):
     aid = scrapy.Field()
-    date =scrapy.Field()
+    date = scrapy.Field()
     agency = scrapy.Field()
     title = scrapy.Field()
+    summary = scrapy.Field()
+    summary_unfilt = scrapy.Field()
     contents = scrapy.Field()
+    contents_unfilt = scrapy.Field()
     url = scrapy.Field()
     category = scrapy.Field()
+    referer = scrapy.Field()
     
 class NaverSummaryDeletedItem(scrapy.Item):
     aid = scrapy.Field()
