@@ -39,8 +39,8 @@ class NeteaseSpider(scrapy.Spider):
         month = lastday[5:7]
         day = lastday[8:10]
         #return 'http://news.163.com/special/0001220O/news_json.js'
-        #jsurl = 'http://snapshot.news.163.com/wgethtml/http+!!news.163.com!special!0001220O!news_json.js/'+year+'-'+month+'/'+day+'/0.js'
-        jsurl = 'http://news.163.com/special/0001220O/news_json.js'
+        jsurl = 'http://snapshot.news.163.com/wgethtml/http+!!news.163.com!special!0001220O!news_json.js/'+year+'-'+month+'/'+day+'/0.js'
+        #jsurl = 'http://news.163.com/special/0001220O/news_json.js'
         return jsurl
     '''
     Starting point.
@@ -67,8 +67,8 @@ class NeteaseSpider(scrapy.Spider):
             month = lastday[5:7]
             day = lastday[8:10]
             #return 'http://news.163.com/special/0001220O/news_json.js'
-            #jsurl = 'http://snapshot.news.163.com/wgethtml/http+!!news.163.com!special!0001220O!news_json.js/'+year+'-'+month+'/'+day+'/0.js'
-            jsurl = 'http://news.163.com/special/0001220O/news_json.js'
+            jsurl = 'http://snapshot.news.163.com/wgethtml/http+!!news.163.com!special!0001220O!news_json.js/'+year+'-'+month+'/'+day+'/0.js'
+            #jsurl = 'http://news.163.com/special/0001220O/news_json.js'
             response = urllib2.urlopen(jsurl)
             html_gbk = response.read()
 
