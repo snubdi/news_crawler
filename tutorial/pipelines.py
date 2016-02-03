@@ -31,7 +31,7 @@ from tutorial.items import FoxArticleItem
 from tutorial.spiders.msnbc_spider import MsnbcSpider
 from tutorial.items import MsnbcArticleItem
 from tutorial.spiders.naver_summary_spider import NaverSummarySpider
-from tutorial.items import NaverSummaryItem
+from tutorial.items import NaverSummaryItem, NaverSummaryDeletedItem
 
 # Define your item pipelines here
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -195,6 +195,8 @@ class MySQLPipeline(object):
             table_name = 'articles_msnbc'
         elif isinstance(item, NaverSummaryItem):
             table_name = 'summary_naver'
+        elif isinstance(item, NaverSummaryDeletedItem):
+            table_name = 'summary_naver_deleted'
         sql = u'insert into ' + table_name + ' ('
         for key in item.keys():
             sql += key
