@@ -84,7 +84,7 @@ class NaverSummarySpider(scrapy.Spider):
                 # selected agency
                 if agency not in [u'경향신문', u'중앙일보', u'한겨레', u'동아일보', u'조선일보',
                                   u'연합뉴스', u'데일리안', u'오마이뉴스', u'매일경제', u'한국경제',
-                                  u'한국일보', u'국민일보', u'서울신문', u'뉴데일리', u'노컷뉴스']:
+                                  u'한국일보', u'국민일보', u'서울신문', u'노컷뉴스']:
                     continue
                 # naver news link
                 news_url = news_article.xpath('.//a/@href').extract()[0]
@@ -101,13 +101,17 @@ class NaverSummarySpider(scrapy.Spider):
                 parsed_news_url = urlparse(news_url)               
                 # host_part = parsed_news_url[1]
                 query_string = parse_qs(parsed_news_url[4])
-                '''
+                
                 summary_1 = ''.join(news_article.xpath('dl/dd/text()').extract()).strip()
                 
                 delete_part = re.compile(r'\[.*?\]')
-                summary_1 = delete_part.sub('', summary_1)                
+                summary_1 = delete_part.sub('', summary_1)
+                news_title_1 = delete_part.sub('', news_title)                
                 delete_part_2 = re.compile(r'\(.*?\)')
                 summary = delete_part_2.sub('', summary_1)
+                news_title_2 = delete_part_2.sub('', news_title_1)
+                delete_part_3 = re.compile(r'\<.*?\>')
+                news_title = delete_part_3.sub('', news_title_2)
                 
                 if agency == u'연합뉴스':
                     pos_1 = summary.find(u'=')
@@ -115,7 +119,7 @@ class NaverSummarySpider(scrapy.Spider):
                           
                 elif agency == u'오마이뉴스':
                     summary = summary.replace(u'오마이뉴스', '').replace(u'▲', '')
-                '''
+                
                 if 'sid1=100' in response.url:
                     category = u'politics'
                 elif 'sid1=101' in response.url:
@@ -140,12 +144,12 @@ class NaverSummarySpider(scrapy.Spider):
                     news_url = 'http://sports.news.naver.com/general/news/read.nhn?oid=' + oid + '&aid=' + aid
                     
                 title_filt = [u'그래픽', u'카메라뉴스', u'카드뉴스', u'부고', u'부음',
-                              u'사진', u'영상', u'포토', u'인사', u'[', u'▲', u'◇', u'◆',
+                              u'사진', u'영상', u'포토', u'인사', u'▲', u'◇', u'◆',
                               u'경향신문', u'중앙일보', u'한겨레', u'동아일보', u'조선일보',
                               u'연합뉴스', u'데일리안', u'오마이뉴스', u'매일경제', u'한국경제',
                               u'한국일보', u'국민일보', u'서울신문', u'뉴데일리', u'노컷뉴스',
                               u'한경', u'매경', 'MBN', 'WOW', u'머니투데이', u'더벨', u'퀴즈',
-                              u'?', u'속보', u'<']
+                              u'?', u'속보']
                 
                 if any(t in news_title for t in title_filt):
                     print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
@@ -215,12 +219,14 @@ class NaverSummarySpider(scrapy.Spider):
         else:
             contents = ' '.join(response.css('div#articleBodyContents').xpath('.//text()').extract()).strip()
         
-        contents_filts_1 = [u'ⓒ', u'©', u'영상']
-        
+        if u'영상' in contents:
+            return
+        '''
         if any(t in contents for t in contents_filts_1):
             print 'copy right!!!!!!!!!!!!!!!!!!!!!'
             return
-        if len(contents) < 500:
+        '''
+        if len(contents) < 300:
             print 'too short!!!!!!!!!!!!!!!!!!!!!!'
             return
         
@@ -288,7 +294,7 @@ class NaverSummarySpider(scrapy.Spider):
         
 
     def filter_func(self, contents_sp):
-        contents_filt_2 = [u'@', 'DB', u'=']
+        contents_filt_2 = [u'@', 'DB', u'=', u'ⓒ', u'©']
         if all(t not in contents_sp for t in contents_filt_2):
             return contents_sp
         
