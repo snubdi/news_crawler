@@ -114,6 +114,7 @@ class NaverSummarySpider(scrapy.Spider):
                 news_title = delete_part_3.sub('', news_title_2)
                 
                 if agency == u'연합뉴스':
+                    print '####################################################################'
                     pos_1 = summary.find(u'=')
                     summary = summary[pos_1 + 1:]
                           
@@ -210,14 +211,12 @@ class NaverSummarySpider(scrapy.Spider):
         host_part = parsed_response_url[1]
 
         if host_part == 'entertain.naver.com':
-            contents = ' '.join(response.css('div#articeBody').xpath('.//text()').extract()).strip()
-            if article['category'] == u'동아일보':
-                contents = ' '.join(response.xpath('//*[@id="articeBody"]/text()').extract()).strip()
+            contents = ' '.join(response.xpath('//*[@id="articeBody"]/text()').extract()).strip()
         elif 'sports' in response.url:
             # contents = ' '.join(response.css('div.article > div').xpath('.//text()').extract()).strip()
-            contents = ' '.join(response.xpath('//div[@id="newsEndContents"]//text()').extract()).strip()
+            contents = ' '.join(response.xpath('//div[@id="newsEndContents"]/text()').extract()).strip()
         else:
-            contents = ' '.join(response.css('div#articleBodyContents').xpath('.//text()').extract()).strip()
+            contents = ' '.join(response.xpath('//div[@id="articleBodyContents"]/text()').extract()).strip()
         
         if u'영상' in contents:
             return
@@ -250,10 +249,10 @@ class NaverSummarySpider(scrapy.Spider):
         
         for contents_filt in contents_filts:
             if contents_filt in contents:
-                 print contents
+                 #print contents
                  contents = contents.replace(contents_filt, '')
                  print '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-                 print contents
+                 #print contents
         
         if agency == u'연합뉴스':
             pos_1 = contents.find(u'=')
