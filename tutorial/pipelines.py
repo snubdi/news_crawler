@@ -32,6 +32,7 @@ from tutorial.spiders.msnbc_spider import MsnbcSpider
 from tutorial.items import MsnbcArticleItem
 from tutorial.spiders.naver_summary_spider import NaverSummarySpider
 from tutorial.items import NaverSummaryItem, NaverSummaryDeletedItem
+from tutorial.spiders.lexisnexis_spider import LexisNexisSpider
 
 # Define your item pipelines here
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -118,6 +119,10 @@ class MySQLPipeline(object):
             self.db_name = 'internetNews'
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
+        elif isinstance(spider, LexisNexisSpider):
+            self.db_name = 'internetNews'
+            self.db_user = 'mers_hwyun'
+            self.db_pw = 'buECAs5ePudeB92R'
         try:
             self.conn = MySQLdb.connect(
                     host = self.db_host,
@@ -197,6 +202,8 @@ class MySQLPipeline(object):
             table_name = 'summary_naver'
         elif isinstance(item, NaverSummaryDeletedItem):
             table_name = 'summary_naver_deleted'
+        elif isinstance(item, LexisnexisArticleItem):
+            table_name = 'articles_lexisnexis'
         sql = u'insert into ' + table_name + ' ('
         for key in item.keys():
             sql += key
@@ -208,7 +215,6 @@ class MySQLPipeline(object):
             sql += '%s,'
         sql = sql[:-1]
         sql += ')'
-
         self.cur.execute(sql, values)
         self.conn.commit()
 

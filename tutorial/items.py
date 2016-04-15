@@ -15,6 +15,15 @@ class TutorialItem(scrapy.Item):
     # name = scrapy.Field()
     pass
 
+class LexisnexisArticleItem(scrapy.Item):
+    aid = scrapy.Field()
+    date = scrapy.Field()
+    title = scrapy.Field()
+    contents = scrapy.Field()
+    url = scrapy.Field()
+    agency = scrapy.Field()
+
+
 class MsnbcArticleItem(scrapy.Item):
     aid = scrapy.Field()
     date = scrapy.Field()
