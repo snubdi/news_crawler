@@ -80,6 +80,8 @@ class NaverArticleItem(scrapy.Item):
     url = scrapy.Field()
     referer = scrapy.Field()
     position = scrapy.Field()
+    keywords = scrapy.Field()
+    tagged_text = scrapy.Field()
 
 class NaverCommentItem(scrapy.Item):
     date = scrapy.Field()
@@ -241,7 +243,7 @@ class NaverSummaryItem(scrapy.Item):
     url = scrapy.Field()
     category = scrapy.Field()
     referer = scrapy.Field()
-    
+
 class NaverSummaryDeletedItem(scrapy.Item):
     aid = scrapy.Field()
     date = scrapy.Field()

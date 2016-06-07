@@ -15,7 +15,10 @@ import MySQLdb
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from pyvirtualdisplay import Display
-from scrapy.http import TextResponse 
+from scrapy.http import TextResponse
+import os
+sys.path.append(os.path.abspath("/var/www/html/asan/asan/database"))
+from korRAKE_002 import *
 
 class NaverQuickSpider(scrapy.Spider):
     name = 'Naver_quick'
@@ -46,14 +49,14 @@ class NaverQuickSpider(scrapy.Spider):
         profile = webdriver.FirefoxProfile()
         profile.native_events_enabled = True
         self.driver = webdriver.Firefox(profile)
-        
+
     def __del__(self):
-        
+
         self.driver.close()
         self.driver.quit()
         self.display.stop()
         print '************************************************************************'
-        print 'CLOSED!!!'  
+        print 'CLOSED!!!'
     '''
     Get the query url
     '''
@@ -63,7 +66,7 @@ class NaverQuickSpider(scrapy.Spider):
         return 'http://news.naver.com/main/list.nhn?sid1=001&mid=sec&mode=LSD&' \
                 + '&date=' + check_date \
                 + '&page=' + str(page) \
-                
+
 
 
     '''
@@ -87,7 +90,7 @@ class NaverQuickSpider(scrapy.Spider):
         cnt = 0
         for news_article in news_list:
             try:
-                
+
                 # news agency
                 agency = news_article.xpath('.//span[@class="writing"]/text()').extract()[0]
 
@@ -95,25 +98,25 @@ class NaverQuickSpider(scrapy.Spider):
                     continue
                 # naver news link
                 news_url = news_article.xpath('.//a/@href').extract()[0]
-                
+
                 #naver news title
                 news_title = news_article.xpath('.//a/text()').extract()[0]
-                
+
                 #naver news date
                 news_date = news_article.xpath('.//span[@class="date"]/text()').extract()[0]
-                
+
                 #naver news paper
                 news_position = news_article.xpath('.//span[@class="paper"]/text()').extract()[0]
-                
+
                 # parse news link to get aid and oid
                 parsed_news_url = urlparse(news_url)
-                
+
                 #host_part = parsed_news_url[1]
                 query_string = parse_qs(parsed_news_url[4])
-                
+
                 # populate article item
                 #if query_string['oid'][0] != '32':
-                #    continue                
+                #    continue
                 article = NaverArticleItem()
                 article['aid'] = query_string['aid'][0]
                 article['oid'] = query_string['oid'][0]
@@ -121,14 +124,14 @@ class NaverQuickSpider(scrapy.Spider):
                 article['date'] = news_date
                 article['title'] = news_title
                 article['position'] = news_position
-                
+
                 req = scrapy.Request(news_url, callback = self.parse_news, dont_filter = self.dont_filter)
 
                 article['referer'] = response.url
                 req.meta['article'] = article
                 #print article
                 yield req
-                
+
                 cnt += 1
             except Exception, e:
                 print 'ERROR!!!!!!!!!!!!!  URL :'
@@ -136,7 +139,7 @@ class NaverQuickSpider(scrapy.Spider):
                 #pass
 
         print 'read %s articles' % cnt
-        
+
         self.page_cnt += 1
         next_page_url = self.get_query_url(self.c_date, self.page_cnt)
         yield scrapy.Request(next_page_url, callback = self.parse, dont_filter = self.dont_filter)
@@ -174,9 +177,18 @@ class NaverQuickSpider(scrapy.Spider):
             date = response.css('div.article_info > div.sponsor > span.t11').xpath('.//text()').extract()[0]
             contents = ' '.join(response.css('div#articleBodyContents').xpath('.//text()').extract()).strip()
 
+        #Use run() from korRAKE002.py to get keywords and tagged_text
+        tres = korRake(contents)
+        res = tres.run()
+        keywords = '|||'.join(res[0])
+        tagged_text = res[1]
+
         article['title'] = title
         article['contents'] = contents
         article['date'] = date
+        article['keywords'] = keywords
+        article['tagged_text'] = tagged_text
+
         yield article
         comment_url = response.url + '&m_view=1'
         req = scrapy.Request(comment_url, callback = self.comment_parse, dont_filter = self.dont_filter)
@@ -184,21 +196,21 @@ class NaverQuickSpider(scrapy.Spider):
         yield req
 
     def comment_parse(self, response):
-        
+
         #try:
         print response.url
         aid = response.meta['article']['aid']
         date = response.meta['article']['date']
         self.driver.get(response.url)
         time.sleep(3)
-    
+
         while True:
             button_more = self.driver.find_element_by_xpath('//a[@class="u_cbox_btn_more __cbox_page_button"]')
             try:
-                button_more.click()   
+                button_more.click()
             except:
-                break  
-            
+                break
+
         resp = TextResponse(url=self.driver.current_url, body=self.driver.page_source, encoding='utf-8')
         for site in resp.xpath('.//ul[@class="u_cbox_list"]/li'):
             username = site.xpath('.//span[@class="u_cbox_nick"]/text()').extract()
@@ -213,15 +225,15 @@ class NaverQuickSpider(scrapy.Spider):
             comment['contents'] = ''.join(contents)
             comment['date'] = date
             yield comment
-        '''   
+        '''
         finally:
             if self.driver != None:
                 self.driver.close()
                 self.driver.quit()
             if self.display != None:
-                self.display.stop()    
-         '''        
-        
+                self.display.stop()
+         '''
+
     '''
     Parse a date string in the form of '2015.07.10 오후 2:39' and return a time object
     Args:

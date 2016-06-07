@@ -130,13 +130,13 @@ class NeteaseSpider(scrapy.Spider):
             # populate the rest of the article
             article = response.meta['article']
             aid = str(article['url'])[article['url'].rfind('/')+1:-5]
-            title =  response.xpath('//div[@class="ep-content"]//h1[@id="h1title"]/text()').extract()
+            title =  response.xpath('//div[@class="post_content_main"]//h1/text()').extract()
             #print title
 
-            agency = response.xpath('//div[@class="ep-content"]//a[@id="ne_article_source"]/text()').extract()
+            agency = response.xpath('//div[@class="post_time_source"]//a[@id="ne_article_source"]/text()').extract()
             #print agency
 
-            content = response.xpath('//div[@class="ep-content"]//div[@id="endText"]/p/text()').extract()
+            content = response.xpath('//div[@class="post_text"]//p/text()').extract()
 
             article['title'] = title[0]
             article['agency'] = agency[0]
@@ -151,11 +151,23 @@ class NeteaseSpider(scrapy.Spider):
             print '=====================' + news_url
             comment_url_base = 'http://comment.news.163.com/cache/newlist/'
 
+            '''
             #get page source
             pageSource = urllib2.urlopen(news_url).read().decode("gbk").encode("utf-8")
             #get boardId from page source
             c = re.search(r"(?<=boardId = ).+?(?=$)",pageSource,re.M)
             boardID = self.GetMiddleStr(c.group(),'"','",')
+            '''
+            if category == 0:
+                boardID = 'news_guonei8_bbs'
+            elif category == 1:
+                boardID = 'news3_bbs'
+            elif category == 2:
+                boardID = 'news_shehui7_bbs'
+            elif category == 4:
+                boardID = 'news3_bbs'
+            elif category == 5:
+                boardID = 'news_junshi_bbs'
 
             comment_url = comment_url_base + boardID + '/' +  aid + '_1.html'
             print '=============' + comment_url
@@ -167,7 +179,7 @@ class NeteaseSpider(scrapy.Spider):
             print traceback.print_exc(file = sys.stdout)
 
     def parse_comment(self, response):
-        # print '==============================' + response.url
+        print '&&&&&&&&&&&&&&&&&&$$$$$$$$$$$$$$$$$$$$' + response.url
         aid = response.meta['aid']
         res = urllib2.urlopen(response.url)
         # res = urllib2.urlopen(r'http://comment.news.163.com/cache/newlist/news_guonei8_bbs/B18LQ7NT0001124J_1.html')
@@ -177,7 +189,7 @@ class NeteaseSpider(scrapy.Spider):
         check_null = self.GetMiddleStr(html_utf,'var newPostList={"newPosts":',',"')
         if check_null.decode('utf-8') == 'null' : return
 
-        #transfer to std json format
+        #translate to std json format
         js = self.GetMiddleStr(html_utf,'var newPostList={"newPosts":','}],')
         news_json = js + '}]'
 
