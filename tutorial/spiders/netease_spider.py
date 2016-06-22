@@ -87,9 +87,11 @@ class NeteaseSpider(scrapy.Spider):
             pos_js = html_utf.find('"news":[')
             js = html_utf[pos_js + 9:]
             js_2 = js.replace('[]]};', '')
-            js_3 = js_2.replace('],', ',')
+            js_3 = js_2.replace('[],','')
+            js_3 = js_3.replace('],', ',')
             js_4 = js_3.replace('[', '')
             news_json = '[' + js_4[: -2] + ']'
+            #news_json = news_json.replace('},,', '},')
             print news_json
 
             # 'c':category  't':news title  'l':url  'p':time
