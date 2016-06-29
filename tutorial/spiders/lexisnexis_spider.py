@@ -29,6 +29,13 @@ class LexisNexisSpider(scrapy.Spider):
     dont_filter = True
     agency_list = []
     '''
+    today = datetime.now() + timedelta(days = -3)
+    date = str(today)[0:10]
+    year = date[0:4]
+    month = date[5:7]
+    day = date[8:10]
+    '''
+    '''
     Constructor
     '''
 
@@ -59,7 +66,13 @@ class LexisNexisSpider(scrapy.Spider):
     '''
 
     def get_query_url(self, keyword):
-        return 'http://www.lexisnexis.com/lnacui2api/api/version1/sr?sr=%28' + keyword + '%29%20and%20Date%28geq%284/5/2011%29%29&csi=8006%2C6742%2C8213%2C8142%2C8075&oc=00006&hgn=t&hl=t&hes=t&hnsl=t&hsl=t&hdym=t&hfb=t&ssl=f&stp=bool&icvrpg=true'
+        today = datetime.now() + timedelta(days = -15)
+        date = str(today)[0:10]
+        year = date[0:4]
+        month = date[5:7]
+        day = date[8:10]
+        return 'http://www.lexisnexis.com/lnacui2api/api/version1/sr?sr=%28' + keyword + '%29%20and%20Date%28geq%28'+ month + '/' + day + '/' + year + '%29%29&csi=8006%2C6742%2C8213%2C8142%2C8075&oc=00006&hgn=t&hl=t&hes=t&hnsl=t&hsl=t&hdym=t&hfb=t&ssl=f&stp=bool&icvrpg=true'
+        #return 'http://www.lexisnexis.com/lnacui2api/api/version1/sr?sr=%28' + keyword + '%29%20and%20Date%28geq%284/5/2011%29%29&csi=8006%2C6742%2C8213%2C8142%2C8075&oc=00006&hgn=t&hl=t&hes=t&hnsl=t&hsl=t&hdym=t&hfb=t&ssl=f&stp=bool&icvrpg=true'
 
     def next_page(self, start_index):
         try:

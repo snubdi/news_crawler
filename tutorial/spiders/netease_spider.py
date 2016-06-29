@@ -159,7 +159,6 @@ class NeteaseSpider(scrapy.Spider):
             #get boardId from page source
             c = re.search(r"(?<=boardId = ).+?(?=$)",pageSource,re.M)
             boardID = self.GetMiddleStr(c.group(),'"','",')
-            '''
             if category == 0:
                 boardID = 'news_guonei8_bbs'
             elif category == 1:
@@ -170,7 +169,6 @@ class NeteaseSpider(scrapy.Spider):
                 boardID = 'news3_bbs'
             elif category == 5:
                 boardID = 'news_junshi_bbs'
-            '''
             comment_url = comment_url_base + boardID + '/' +  aid + '_1.html'
             print '=============' + comment_url
             '''
@@ -178,7 +176,7 @@ class NeteaseSpider(scrapy.Spider):
             #comments/newList?offset=0&limit=30&showLevelThreshold=72&headLimit=1&tailLimit=2&callback=getData&ibc=newspc
             comment_url = 'http://comment.news.163.com/api/v1/products/a2869674571f77b5a0867c3d71db5856/threads/' \
             + aid  + '/comments/newList?offset=0&limit=30&showLevelThreshold=72&headLimit=1&tailLimit=2&callback=getData&ibc=newspc'
-            
+
             req = scrapy.Request(comment_url, callback = self.parse_comment, dont_filter = self.dont_filter)
             req.meta['aid'] = aid
             yield req
@@ -196,10 +194,10 @@ class NeteaseSpider(scrapy.Spider):
         pos_commt_js_start = html_utf.find('\"comments\"')
         pos_commt_js_end = html_utf.find(',\"newListSize\"')
         js = html_utf[pos_commt_js_start + 11: pos_commt_js_end]
-        
+
         if 'channelID' in js:
             return
-        
+
         #comment_dic = {}
         comment_dic = json.loads(js)
         for key, value in comment_dic.items():
