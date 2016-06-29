@@ -62,7 +62,7 @@ class NeteaseSpider(scrapy.Spider):
 
         try:
             #Get date
-            lastday = str(datetime.date.today() - datetime.timedelta(days=1))
+            lastday = str(datetime.date.today() - datetime.timedelta(days=2))
             year = lastday[0:4]
             month = lastday[5:7]
             day = lastday[8:10]
@@ -91,7 +91,7 @@ class NeteaseSpider(scrapy.Spider):
             js_3 = js_3.replace('],', ',')
             js_4 = js_3.replace('[', '')
             news_json = '[' + js_4[: -2] + ']'
-            #news_json = news_json.replace('},,', '},')
+            news_json = news_json.replace('},,', '},')
             print news_json
 
             # 'c':category  't':news title  'l':url  'p':time
@@ -170,9 +170,15 @@ class NeteaseSpider(scrapy.Spider):
                 boardID = 'news3_bbs'
             elif category == 5:
                 boardID = 'news_junshi_bbs'
-
+            '''
             comment_url = comment_url_base + boardID + '/' +  aid + '_1.html'
             print '=============' + comment_url
+            '''
+            #http://comment.news.163.com/api/v1/products/a2869674571f77b5a0867c3d71db5856/threads/BQLQTMO800014SEH/
+            #comments/newList?offset=0&limit=30&showLevelThreshold=72&headLimit=1&tailLimit=2&callback=getData&ibc=newspc
+            comment_url = 'http://comment.news.163.com/api/v1/products/a2869674571f77b5a0867c3d71db5856/threads/' \
+            + aid  + '/comments/newList?offset=0&limit=30&showLevelThreshold=72&headLimit=1&tailLimit=2&callback=getData&ibc=newspc'
+            
             req = scrapy.Request(comment_url, callback = self.parse_comment, dont_filter = self.dont_filter)
             req.meta['aid'] = aid
             yield req
@@ -187,51 +193,28 @@ class NeteaseSpider(scrapy.Spider):
         # res = urllib2.urlopen(r'http://comment.news.163.com/cache/newlist/news_guonei8_bbs/B18LQ7NT0001124J_1.html')
         #comment json url is encoded by utf-8
         html_utf = res.read()
-
-        check_null = self.GetMiddleStr(html_utf,'var newPostList={"newPosts":',',"')
-        if check_null.decode('utf-8') == 'null' : return
-
-        #translate to std json format
-        js = self.GetMiddleStr(html_utf,'var newPostList={"newPosts":','}],')
-        news_json = js + '}]'
-
-
-        hjson = json.loads(news_json, encoding ="utf-8")
-        print 'comment size is :' + str(len(hjson))
-
-
-        for items in hjson:
+        pos_commt_js_start = html_utf.find('\"comments\"')
+        pos_commt_js_end = html_utf.find(',\"newListSize\"')
+        js = html_utf[pos_commt_js_start + 11: pos_commt_js_end]
+        
+        if 'channelID' in js:
+            return
+        
+        #comment_dic = {}
+        comment_dic = json.loads(js)
+        for key, value in comment_dic.items():
             try:
-
-                if items.has_key('d'):
-                    items.pop('d')
-
-                max_reply = str(len(items))
-
-                for key in items:
-                    if key == max_reply:
-                        comment_dic = items[key]
-
                 comment = NeteaseCommentItem()
-                comment['date'] = comment_dic['t']
+                comment['comment_id'] = key
+                comment_contents = value
+                comment['date'] = comment_contents['createTime']
+                comment['username'] = comment_contents['user']['nickname']
+                comment['contents'] = comment_contents['content']
+                comment['like_count'] = comment_contents['vote']
+                comment['dislike_count'] = comment_contents['against']
                 comment['aid'] = aid
-                comment['username'] = comment_dic['n']
-                comment['contents'] = comment_dic['b']
-                comment['like_count'] = comment_dic['v']
-                comment['dislike_count'] = comment_dic['a']
-                comment['comment_id'] = comment_dic['p']
                 yield comment
             except Exception, e:
-                print 'Parse_comment ERROR!!!!!!!!!!!!!  :'
-                print items
+                print 'Parse_comment ERROR!!!!!!!!!!!!!!!!!!!!!!!!:'
                 print traceback.print_exc(file = sys.stdout)
-
-        page = response.url[response.url.rfind('_')+1:response.url.rfind('.html')]
-        #print page
-        next_comment_url = response.url[:response.url.rfind('_')+1]
-        next_comment_url +=str(int(page)+1) + '.html'
-        print next_comment_url
-        req = scrapy.Request(next_comment_url, callback = self.parse_comment, dont_filter = self.dont_filter)
-        req.meta['aid'] = aid
-        yield req
 
