@@ -62,7 +62,7 @@ class NeteaseSpider(scrapy.Spider):
 
         try:
             #Get date
-            lastday = str(datetime.date.today() - datetime.timedelta(days=2))
+            lastday = str(datetime.date.today() - datetime.timedelta(days=1))
             year = lastday[0:4]
             month = lastday[5:7]
             day = lastday[8:10]

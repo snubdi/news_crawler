@@ -66,7 +66,7 @@ class LexisNexisSpider(scrapy.Spider):
     '''
 
     def get_query_url(self, keyword):
-        today = datetime.now() + timedelta(days = -15)
+        today = datetime.now() + timedelta(days = -25)
         date = str(today)[0:10]
         year = date[0:4]
         month = date[5:7]
