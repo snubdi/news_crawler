@@ -18,7 +18,7 @@ db_user = 'mers_hwyun'
 db_pw = 'buECAs5ePudeB92R'
 #mailing infomation
 mailto_list=["asan@bdi.snu.ac.kr"]
-#mailto_list=["keith_wzh@hotmail.com","bdipyo@snu.ac.kr"]
+#mailto_list=["keith_wzh@hotmail.com"]
 mail_host="smtp.gmail.com"
 mail_user="bigdata2015.snu"
 mail_pass="bigdata2015"
@@ -35,6 +35,21 @@ try:
 except MySQLdb.Error, e:
     print 'MySQL error %d: %s' % (e.args[0], e.args[1])
 yesterday = datetime.now() + timedelta(days = -1)
+
+#For lexisnexis
+last_one_week = (datetime.now() + timedelta(days = -7)).strftime("%Y-%m-%d")
+last_two_week = (datetime.now() + timedelta(days = -14)).strftime("%Y-%m-%d")
+sql_lexisnexis_last_one_week = u'select count(*) from articles_lexisnexis  where  date(date) >= "' + last_one_week + u'"'
+sql_lexisnexis_last_two_week = u'select count(*) from articles_lexisnexis  where  date(date) >= "' + last_two_week + u'"'
+cur.execute(sql_lexisnexis_last_one_week)
+articleCountLexisnexis_last_one_week = cur.fetchone()[0]
+
+cur.execute(sql_lexisnexis_last_two_week)
+articleCountLexisnexis_last_two_week = cur.fetchone()[0]
+
+print articleCountLexisnexis_last_one_week
+print articleCountLexisnexis_last_two_week
+
 check_date = yesterday.strftime("%Y-%m-%d")
 info = "date: "+check_date + "\n"
 info += '========================================\n'
@@ -80,6 +95,10 @@ for media in media_list:
 
 info += '----------------------------------------\n'
 info += '{0:15s} {1:12s} {2:12s}'.format('Total', str(totalArticle), str(totalComment))
+info += '\n----------------------------------------\n'
+info += 'Lexisnexis_last 1 week' +'       ' + str(articleCountLexisnexis_last_one_week) + '\n'
+info += 'Lexisnexis_last 2 week' +'       ' + str(articleCountLexisnexis_last_two_week)
+#info += '{0:15s} {1:12s} {2:12s}'.format('Lexisnexis_lastweek', str(articleCountLexisnexis))
 sql = u'replace into crawl_infomation values ("'+check_date+'","total",'+str(totalArticle)+','+str(totalComment)+')'
 cur.execute(sql)
 conn.commit()

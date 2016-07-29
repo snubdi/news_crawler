@@ -71,7 +71,26 @@ class LexisNexisSpider(scrapy.Spider):
         year = date[0:4]
         month = date[5:7]
         day = date[8:10]
-        return 'http://www.lexisnexis.com/lnacui2api/api/version1/sr?sr=%28' + keyword + '%29%20and%20Date%28geq%28'+ month + '/' + day + '/' + year + '%29%29&csi=8006%2C6742%2C8213%2C8142%2C8075&oc=00006&hgn=t&hl=t&hes=t&hnsl=t&hsl=t&hdym=t&hfb=t&ssl=f&stp=bool&icvrpg=true'
+        return 'http://www.lexisnexis.com/lnacui2api/api/version1/sr?sr=%28' + keyword + '%29%20and%20Date%28geq%28'+ month + '/' + day + '/' + year + '%29%29&csi=8006%2C6742%2C8213%2C8142%2C8075%2C11810%2C306884%2C247189&oc=00006&hgn=t&hl=t&hes=t&hnsl=t&hsl=t&hdym=t&hfb=t&ssl=f&stp=bool&icvrpg=true'
+        '''
+        return 'http://www.lexisnexis.com/lnacui2api/api/version1/sr?sr=%28' + keyword + '%29%20and%20Date%28geq%28'+ month + '/' + day + '/' + year + '%29%29&csi=8006' \
+					#The New York Times
+					+'%2C6742' \
+					# USA TODAY
+					+'%2C8213' \
+					#Wall Street Journal Abstracts
+					+'%2C8142' \
+					#The Washington Post
+					+'%2C8075' \
+					#Post-Dispatch
+					+'%2C11810' \
+					#The Baltimore Sun
+					+'%2C306884' \
+					#The Philadelphia Inquirer
+					+'%2C247189' \
+					+'&oc=00006&hgn=t&hl=t&hes=t&hnsl=t&hsl=t&hdym=t&hfb=t&ssl=f&stp=bool&icvrpg=true'
+		'''
+        #return 'http://www.lexisnexis.com/lnacui2api/api/version1/sr?sr=%28' + keyword + '%29%20and%20Date%28geq%28'+ month + '/' + day + '/' + year + '%29%29&csi=8006%2C6742%2C8213%2C8142%2C8075&oc=00006&hgn=t&hl=t&hes=t&hnsl=t&hsl=t&hdym=t&hfb=t&ssl=f&stp=bool&icvrpg=true'
         #return 'http://www.lexisnexis.com/lnacui2api/api/version1/sr?sr=%28' + keyword + '%29%20and%20Date%28geq%284/5/2011%29%29&csi=8006%2C6742%2C8213%2C8142%2C8075&oc=00006&hgn=t&hl=t&hes=t&hnsl=t&hsl=t&hdym=t&hfb=t&ssl=f&stp=bool&icvrpg=true'
 
     def next_page(self, start_index):
