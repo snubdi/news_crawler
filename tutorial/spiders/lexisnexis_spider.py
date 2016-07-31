@@ -71,9 +71,8 @@ class LexisNexisSpider(scrapy.Spider):
         year = date[0:4]
         month = date[5:7]
         day = date[8:10]
-        return 'http://www.lexisnexis.com/lnacui2api/api/version1/sr?sr=%28' + keyword + '%29%20and%20Date%28geq%28'+ month + '/' + day + '/' + year + '%29%29&csi=8006%2C6742%2C8213%2C8142%2C8075%2C11810%2C306884%2C247189&oc=00006&hgn=t&hl=t&hes=t&hnsl=t&hsl=t&hdym=t&hfb=t&ssl=f&stp=bool&icvrpg=true'
+        return 'http://www.lexisnexis.com/lnacui2api/api/version1/sr?sr=%28' + keyword + '%29%20and%20Date%28geq%28'+ month + '/' + day + '/' + year + '%29%29&csi=8006%2C6742%2C8213%2C8142%2C8075%2C11810%2C306884%2C247189%2C163823%2C301477&oc=00006&hgn=t&hl=t&hes=t&hnsl=t&hsl=t&hdym=t&hfb=t&ssl=f&stp=bool&icvrpg=true'
         '''
-        return 'http://www.lexisnexis.com/lnacui2api/api/version1/sr?sr=%28' + keyword + '%29%20and%20Date%28geq%28'+ month + '/' + day + '/' + year + '%29%29&csi=8006' \
 					#The New York Times
 					+'%2C6742' \
 					# USA TODAY
@@ -88,7 +87,10 @@ class LexisNexisSpider(scrapy.Spider):
 					+'%2C306884' \
 					#The Philadelphia Inquirer
 					+'%2C247189' \
-					+'&oc=00006&hgn=t&hl=t&hes=t&hnsl=t&hsl=t&hdym=t&hfb=t&ssl=f&stp=bool&icvrpg=true'
+					#Chicago Daily Herald
+                    +'%2c163823'
+					#Arizona Capitol Times
+                    +'%2c301477'
 		'''
         #return 'http://www.lexisnexis.com/lnacui2api/api/version1/sr?sr=%28' + keyword + '%29%20and%20Date%28geq%28'+ month + '/' + day + '/' + year + '%29%29&csi=8006%2C6742%2C8213%2C8142%2C8075&oc=00006&hgn=t&hl=t&hes=t&hnsl=t&hsl=t&hdym=t&hfb=t&ssl=f&stp=bool&icvrpg=true'
         #return 'http://www.lexisnexis.com/lnacui2api/api/version1/sr?sr=%28' + keyword + '%29%20and%20Date%28geq%284/5/2011%29%29&csi=8006%2C6742%2C8213%2C8142%2C8075&oc=00006&hgn=t&hl=t&hes=t&hnsl=t&hsl=t&hdym=t&hfb=t&ssl=f&stp=bool&icvrpg=true'

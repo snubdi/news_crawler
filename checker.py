@@ -35,6 +35,7 @@ try:
 except MySQLdb.Error, e:
     print 'MySQL error %d: %s' % (e.args[0], e.args[1])
 yesterday = datetime.now() + timedelta(days = -1)
+check_date = yesterday.strftime("%Y-%m-%d")
 
 #For lexisnexis
 last_one_week = (datetime.now() + timedelta(days = -7)).strftime("%Y-%m-%d")
@@ -47,10 +48,30 @@ articleCountLexisnexis_last_one_week = cur.fetchone()[0]
 cur.execute(sql_lexisnexis_last_two_week)
 articleCountLexisnexis_last_two_week = cur.fetchone()[0]
 
-print articleCountLexisnexis_last_one_week
-print articleCountLexisnexis_last_two_week
+#For each media in Naver
+sql_naver_donga = u'select count(*) from articles_naver where date(date) = "' + check_date + u'"' + u'and agency = "동아일보"'
+sql_naver_joongang = u'select count(*) from articles_naver where date(date) = "' + check_date + u'"' + u'and agency = "중앙일보"'
+sql_naver_hani = u'select count(*) from articles_naver where date(date) = "' + check_date + u'"' + u'and agency = "한겨레"'
+sql_naver_chosun = u'select count(*) from articles_naver where date(date) = "' + check_date + u'"' + u'and agency = "조선일보"'
+sql_naver_khan = u'select count(*) from articles_naver where date(date) = "' + check_date + u'"' + u'and agency = "경향신문"'
 
-check_date = yesterday.strftime("%Y-%m-%d")
+cur.execute(sql_naver_donga)
+articleCountNaver_donga = cur.fetchone()[0]
+
+cur.execute(sql_naver_joongang)
+articleCountNaver_joonang = cur.fetchone()[0]
+
+cur.execute(sql_naver_hani)
+articleCountNaver_hani = cur.fetchone()[0]
+
+cur.execute(sql_naver_chosun)
+articleCountNaver_chosun = cur.fetchone()[0]
+
+cur.execute(sql_naver_khan)
+articleCountNaver_khan = cur.fetchone()[0]
+
+
+#check_date = yesterday.strftime("%Y-%m-%d")
 info = "date: "+check_date + "\n"
 info += '========================================\n'
 #get count info from DB
@@ -96,6 +117,12 @@ for media in media_list:
 info += '----------------------------------------\n'
 info += '{0:15s} {1:12s} {2:12s}'.format('Total', str(totalArticle), str(totalComment))
 info += '\n----------------------------------------\n'
+info += 'Naver_Donga' + '        ' + str(articleCountNaver_donga) + '\n'
+info += 'Naver_Joonang' + '      ' + str(articleCountNaver_joonang) + '\n'
+info += 'Naver_Hani' + '         ' + str(articleCountNaver_hani) + '\n'
+info += 'Naver_Chosun' + '       ' + str(articleCountNaver_chosun) + '\n'
+info += 'Naver_Khan' + '         ' + str(articleCountNaver_khan) + '\n'
+info += '----------------------------------------\n'
 info += 'Lexisnexis_last 1 week' +'       ' + str(articleCountLexisnexis_last_one_week) + '\n'
 info += 'Lexisnexis_last 2 week' +'       ' + str(articleCountLexisnexis_last_two_week)
 #info += '{0:15s} {1:12s} {2:12s}'.format('Lexisnexis_lastweek', str(articleCountLexisnexis))
