@@ -35,7 +35,9 @@ try:
 except MySQLdb.Error, e:
     print 'MySQL error %d: %s' % (e.args[0], e.args[1])
 yesterday = datetime.now() + timedelta(days = -1)
+today = datetime.now() + timedelta(days = -0)
 check_date = yesterday.strftime("%Y-%m-%d")
+check_date_today = today.strftime("%Y-%m-%d")
 
 #For lexisnexis
 last_one_week = (datetime.now() + timedelta(days = -7)).strftime("%Y-%m-%d")
@@ -49,11 +51,11 @@ cur.execute(sql_lexisnexis_last_two_week)
 articleCountLexisnexis_last_two_week = cur.fetchone()[0]
 
 #For each media in Naver
-sql_naver_donga = u'select count(*) from articles_naver where date(date) = "' + check_date + u'"' + u'and agency = "동아일보"'
-sql_naver_joongang = u'select count(*) from articles_naver where date(date) = "' + check_date + u'"' + u'and agency = "중앙일보"'
-sql_naver_hani = u'select count(*) from articles_naver where date(date) = "' + check_date + u'"' + u'and agency = "한겨레"'
-sql_naver_chosun = u'select count(*) from articles_naver where date(date) = "' + check_date + u'"' + u'and agency = "조선일보"'
-sql_naver_khan = u'select count(*) from articles_naver where date(date) = "' + check_date + u'"' + u'and agency = "경향신문"'
+sql_naver_donga = u'select count(*) from articles_naver where date(date) = "' + check_date_today + u'"' + u'and agency = "동아일보"'
+sql_naver_joongang = u'select count(*) from articles_naver where date(date) = "' + check_date_today + u'"' + u'and agency = "중앙일보"'
+sql_naver_hani = u'select count(*) from articles_naver where date(date) = "' + check_date_today + u'"' + u'and agency = "한겨레"'
+sql_naver_chosun = u'select count(*) from articles_naver where date(date) = "' + check_date_today + u'"' + u'and agency = "조선일보"'
+sql_naver_khan = u'select count(*) from articles_naver where date(date) = "' + check_date_today + u'"' + u'and agency = "경향신문"'
 
 cur.execute(sql_naver_donga)
 articleCountNaver_donga = cur.fetchone()[0]
@@ -117,11 +119,11 @@ for media in media_list:
 info += '----------------------------------------\n'
 info += '{0:15s} {1:12s} {2:12s}'.format('Total', str(totalArticle), str(totalComment))
 info += '\n----------------------------------------\n'
-info += 'Naver_Donga' + '        ' + str(articleCountNaver_donga) + '\n'
-info += 'Naver_Joonang' + '      ' + str(articleCountNaver_joonang) + '\n'
-info += 'Naver_Hani' + '         ' + str(articleCountNaver_hani) + '\n'
-info += 'Naver_Chosun' + '       ' + str(articleCountNaver_chosun) + '\n'
-info += 'Naver_Khan' + '         ' + str(articleCountNaver_khan) + '\n'
+info += 'Naver_Dongai_today' + '        ' + str(articleCountNaver_donga) + '\n'
+info += 'Naver_Joonang_today' + '      ' + str(articleCountNaver_joonang) + '\n'
+info += 'Naver_Hani_today' + '         ' + str(articleCountNaver_hani) + '\n'
+info += 'Naver_Chosun_today' + '       ' + str(articleCountNaver_chosun) + '\n'
+info += 'Naver_Khan_today' + '         ' + str(articleCountNaver_khan) + '\n'
 info += '----------------------------------------\n'
 info += 'Lexisnexis_last 1 week' +'       ' + str(articleCountLexisnexis_last_one_week) + '\n'
 info += 'Lexisnexis_last 2 week' +'       ' + str(articleCountLexisnexis_last_two_week)
