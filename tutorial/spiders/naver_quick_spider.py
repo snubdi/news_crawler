@@ -39,7 +39,7 @@ class NaverQuickSpider(scrapy.Spider):
         self.e_date = end_date
         self.c_date = check_date
         if check_date == '':
-            yesterday = datetime.now() + timedelta(days = -1)
+            yesterday = datetime.now() + timedelta(days = -0)
             self.c_date = yesterday.strftime("%Y%m%d")
             print self.c_date
         self.start_urls = [self.get_query_url(self.c_date, self.page_cnt)]
@@ -63,7 +63,8 @@ class NaverQuickSpider(scrapy.Spider):
     def get_query_url(self, check_date, page):
         #qs = {'query': keyword}
         #'http://news.naver.com/main/list.nhn?sid1=001&mid=sec&mode=LSD&listType=paper' \
-        return 'http://news.naver.com/main/list.nhn?sid1=001&mid=sec&mode=LSD&' \
+        #return 'http://news.naver.com/main/list.nhn?sid1=001&mid=sec&mode=LSD&' \
+        return 'http://news.naver.com/main/list.nhn?mode=LSD&mid=sec&sid1=001&listType=paper' \
                 + '&date=' + check_date \
                 + '&page=' + str(page) \
 

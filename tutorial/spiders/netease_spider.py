@@ -59,7 +59,7 @@ class NeteaseSpider(scrapy.Spider):
 
 
     def parse(self, response):
-
+        time.sleep(1)
         try:
             #Get date
             lastday = str(datetime.date.today() - datetime.timedelta(days=1))
@@ -128,6 +128,7 @@ class NeteaseSpider(scrapy.Spider):
      response - the response object pertaining to the news article page
     '''
     def parse_news(self, response):
+        time.sleep(1)
         try:
             # populate the rest of the article
             article = response.meta['article']
@@ -185,6 +186,7 @@ class NeteaseSpider(scrapy.Spider):
             print traceback.print_exc(file = sys.stdout)
 
     def parse_comment(self, response):
+        time.sleep(1)
         print '&&&&&&&&&&&&&&&&&&$$$$$$$$$$$$$$$$$$$$' + response.url
         aid = response.meta['aid']
         res = urllib2.urlopen(response.url)
