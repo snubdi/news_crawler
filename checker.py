@@ -34,6 +34,16 @@ try:
     conn.select_db(db_name)
 except MySQLdb.Error, e:
     print 'MySQL error %d: %s' % (e.args[0], e.args[1])
+today = datetime.now() + timedelta(days = -0)
+delay2 = datetime.now() + timedelta(days = -2)
+delay3 = datetime.now() + timedelta(days = -3)
+delay4 = datetime.now() + timedelta(days = -4)
+
+check_date_today = today.strftime("%Y-%m-%d")
+check_date_delay2 = delay2.strftime("%Y-%m-%d")
+check_date_delay3 = delay3.strftime("%Y-%m-%d")
+check_date_delay4 = delay4.strftime("%Y-%m-%d")
+
 yesterday = datetime.now() + timedelta(days = -1)
 today = datetime.now() + timedelta(days = -0)
 check_date = yesterday.strftime("%Y-%m-%d")

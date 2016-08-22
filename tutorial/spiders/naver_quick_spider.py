@@ -17,7 +17,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 from pyvirtualdisplay import Display
 from scrapy.http import TextResponse
 import os
-sys.path.append(os.path.abspath("/var/www/html/asan/asan/database"))
+#sys.path.append(os.path.abspath("/var/www/html/asan/asan/database"))
+sys.path.append(os.path.abspath("/var/www/html/asan/asan/rakes"))
 from korRAKE_002 import *
 
 class NaverQuickSpider(scrapy.Spider):
@@ -179,10 +180,17 @@ class NaverQuickSpider(scrapy.Spider):
             contents = ' '.join(response.css('div#articleBodyContents').xpath('.//text()').extract()).strip()
 
         #Use run() from korRAKE002.py to get keywords and tagged_text
-        tres = korRake(contents)
-        res = tres.run()
-        keywords = '|||'.join(res[0])
-        tagged_text = res[1]
+        #tres = korRake(contents)
+        #res = tres.run()
+        #keywords = '|||'.join(res[0])
+        #tagged_text = res[1]
+        
+        tres = korRake()
+        keywords = tres.run(contents)
+        tagged_text = tres.get_tagged_text()
+        
+        #keywords = run(contents)
+        #tagged_text = get_tagged_text(contents,contents)
 
         article['title'] = title
         article['contents'] = contents
