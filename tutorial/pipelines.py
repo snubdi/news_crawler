@@ -33,6 +33,7 @@ from tutorial.items import MsnbcArticleItem
 from tutorial.spiders.naver_summary_spider import NaverSummarySpider
 from tutorial.items import NaverSummaryItem, NaverSummaryDeletedItem
 from tutorial.spiders.lexisnexis_spider import LexisNexisSpider
+from tutorial.spiders.naver_tv_spider import NaverTvSpider
 
 # Define your item pipelines here
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -120,6 +121,10 @@ class MySQLPipeline(object):
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
         elif isinstance(spider, LexisNexisSpider):
+            self.db_name = 'internetNews'
+            self.db_user = 'mers_hwyun'
+            self.db_pw = 'buECAs5ePudeB92R'
+        elif isinstance(spider, NaverTvSpider):
             self.db_name = 'internetNews'
             self.db_user = 'mers_hwyun'
             self.db_pw = 'buECAs5ePudeB92R'
