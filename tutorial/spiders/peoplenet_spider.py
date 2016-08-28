@@ -13,6 +13,9 @@ import MySQLdb
 import datetime
 from scrapy.selector import Selector
 from scrapy.http import HtmlResponse
+import os
+sys.path.append(os.path.abspath("/var/www/html/asan/asan/rakes"))
+from ChRake import *
 
 class PeoplenetSpider(scrapy.Spider):
     name = 'peoplenet'
@@ -22,7 +25,7 @@ class PeoplenetSpider(scrapy.Spider):
     s_date = ''
     page_cnt = 1
     dont_filter = False
-    
+
 
     '''
     Constructor
@@ -41,7 +44,7 @@ class PeoplenetSpider(scrapy.Spider):
         article_time_1 = article_time - 3600
         return 'http://news.people.com.cn/210801/211150/index.js?_='+str(article_time_1)
 
-    
+
     '''
     Starting point
     Retrieve the news link from json
@@ -54,13 +57,13 @@ class PeoplenetSpider(scrapy.Spider):
             #Get news.people.com.cn's data
             article_read = urllib2.urlopen(response.url)
             html_utf = article_read.read()
-            
+
 
             #transfer to json format
             js = html_utf.replace('{"items":','')
             js_0 = js.replace(']}',']')
-            
-            
+
+
             #read json
             hjson = json.loads(js_0)
             for items in hjson:
@@ -75,12 +78,12 @@ class PeoplenetSpider(scrapy.Spider):
                 req = scrapy.Request(news_url, callback = self.parse_news, dont_filter = self.dont_filter)
                 req.meta['article'] = article
                 yield req
-                
+
         except Exception, e:
             print 'ERROR!!!!!!!!!!!!!  URL :'
             print traceback.print_exc(file = sys.stdout)
 
-            
+
     '''
     Retrieve the next page's contents of news from the given news
     Args:
@@ -106,7 +109,7 @@ class PeoplenetSpider(scrapy.Spider):
             count = this_page[-6:-5]
             count_1 = int(count) + 1
             str_1 = '//*[@id="p_content"]/div[3]/a['+str(count_1)+']'
-            
+
             if response.xpath(str_1):
                 str_2 = str_1 + '/@href'
                 next_url_0 = response.xpath(str_2).extract()
@@ -116,14 +119,14 @@ class PeoplenetSpider(scrapy.Spider):
                 req.meta['article'] = article
                 req.meta['contents'] = content_2
                 yield req
-                
+
             else:
                 yield article
         except Exception, e:
                 print 'Parse_next_page ERROR!!!!!!!!!!!!!  :'
                 print items
                 print traceback.print_exc(file = sys.stdout)
-        
+
 
     '''
     1: Retrieve the next page of a news if have
@@ -138,7 +141,7 @@ class PeoplenetSpider(scrapy.Spider):
             agency = response.xpath('//*[@id="p_origin"]/a/text()').extract()
             content_1 = response.xpath('//*[@id="p_content"]/p/text()').extract()
             article['agency'] = agency[0]
-            
+
 
             #get the cagegory of news
             category_url = response.url
@@ -219,10 +222,20 @@ class PeoplenetSpider(scrapy.Spider):
             else:
                 article['category'] = '其他'
 
+
+            content = ''.join(content_1)
+            #Get keywords and tagged_text
+            rake = ChRake()
+            keywords_list = rake.run(content)
+            keywords = '\n'.join(keywords_list)
+            tagged_text = rake.get_tagged_text
+
             article['contents'] = ''.join(content_1)
-            
+            article['keywords'] = keywords
+            article['tagged_text'] = tagged_text
+
             if response.xpath('//*[@id="p_content"]/div[3]'):
-            
+
                 next_url_0 = response.xpath('//*[@id="p_content"]/div[3]/a[2]/@href').extract()
                 pos = category_url.find("/n/")
                 next_url = category_url[:pos]+str(next_url_0[0])
@@ -230,24 +243,24 @@ class PeoplenetSpider(scrapy.Spider):
                 req.meta['article'] = article
                 req.meta['contents'] = ''.join(content_1)
                 yield req
-                 
-            
+
+
             else:
                 yield response.meta['article']
 
 
-             
+
             #get the json url of comments
             comment_url = category_url
-            comment_json_url = 'http://bbs1.people.com.cn/api/news.do?action=lastNewsComments&newsId='+article['aid']   
+            comment_json_url = 'http://bbs1.people.com.cn/api/news.do?action=lastNewsComments&newsId='+article['aid']
             req = scrapy.Request(comment_json_url, callback = self.parse_comment, dont_filter = self.dont_filter)
             yield req
-                        
+
 
         except Exception, e:
             print 'Parse_news ERROR!!!!!!!!!!!!!  URL :'+ article['url']
             print traceback.print_exc(file = sys.stdout)
-            
+
 
     '''
     Retrieve the comment of a given news
@@ -259,16 +272,16 @@ class PeoplenetSpider(scrapy.Spider):
         #get aid of comments
         comment_url = response.url
         aid = comment_url[-8:]
-        
-        
+
+
         #open comment json url
         comment_json_read = urllib2.urlopen(response.url)
         comment_json_0 = comment_json_read.read()
         comment_json_1 = unicode(comment_json_0, 'gbk')
         comment_json_2 = comment_json_1.encode("UTF-8")
         if len(comment_json_2) > 2:
-        
-        
+
+
             #transfer to json format
             comment_json_3 = comment_json_2.replace('\\','')
             comment_json_4 = comment_json_3.replace('["{','[{')
@@ -276,7 +289,7 @@ class PeoplenetSpider(scrapy.Spider):
             comment_json_6 = comment_json_5.replace('}","{','},{')
 
 
-        
+
             #read json
             comment_json = json.loads(comment_json_6)
             for items in comment_json:
@@ -296,12 +309,12 @@ class PeoplenetSpider(scrapy.Spider):
         else:
             print 'no comment'
 
-        
-        
-        
-            
 
-            
-            
-            
-            
+
+
+
+
+
+
+
+

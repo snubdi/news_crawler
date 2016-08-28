@@ -11,6 +11,9 @@ import scrapy
 from tutorial.items import SankeiArticleItem
 import MySQLdb
 import datetime
+import os
+sys.path.append(os.path.abspath("/var/www/html/asan/asan/rakes"))
+from jpRake import *
 
 
 class SankeiSpider(scrapy.Spider):
@@ -56,7 +59,7 @@ class SankeiSpider(scrapy.Spider):
                 aid = news_url[pos_1 + 12: pos_2]
                 article['url'] = news_url
                 article['aid'] = aid
-            
+
                 req = scrapy.Request(news_url, callback = self.parse_news)
                 req.meta['article'] = article
                 yield req
@@ -64,13 +67,13 @@ class SankeiSpider(scrapy.Spider):
             pos_3 = response.url.find("-n")
             pos_4 = response.url.find(".html")
             page_count = response.url[pos_3 + 2 : pos_4]
-            
+
             #determine whether there has a next page
             if response.xpath('//*[@id="primary"]/section/div//a[@class="pageNext"]'):
                 next_url = response.url[: pos_3 + 2] + str(int(page_count) + 1) + response.url[pos_4:]
                 yield scrapy.Request(next_url, callback = self.parse)
-                
-                
+
+
         except Exception, e:
             print 'ERROR!!!!!!!!!!!!!  URL :'
             print traceback.print_exc(file = sys.stdout)
@@ -84,7 +87,7 @@ class SankeiSpider(scrapy.Spider):
 
     def parse_news(self, response):
         try:
-            
+
             article = response.meta['article']
 
             article['agency'] = u'産経ニュース'
@@ -92,7 +95,7 @@ class SankeiSpider(scrapy.Spider):
             content_1 = response.xpath('//*[@id="primary"]/section/article/div[2]/p/text()').extract()
             content = ''.join(content_1)
             article['contents'] = content
-            
+
             news_url = response.url
             if 'sports' in news_url:
                 article['category'] = u'スポーツ'
@@ -118,8 +121,8 @@ class SankeiSpider(scrapy.Spider):
                 article['category'] = u'WESTトップ'
             else:
                 article['category'] = u'その他'
-            
-            
+
+
             pos_1 = response.url.find("-n")
             pos_2 = response.url.find(".html")
             page_count = response.url[pos_1 + 2 : pos_2]
@@ -132,11 +135,11 @@ class SankeiSpider(scrapy.Spider):
                 yield req
             else:
                 yield article
-            
+
 
         except Exception, e:
             print 'Parse_news ERROR!!!!!!!!!!!!!  URL :'+ response.url
-            print traceback.print_exc(file = sys.stdout)    
+            print traceback.print_exc(file = sys.stdout)
 
 
 
@@ -145,7 +148,7 @@ class SankeiSpider(scrapy.Spider):
     Args:
      response - the response object pertaining to the next page
     '''
-    
+
     def parse_next_page(self, response):
         try:
             article = response.meta['article']
@@ -156,6 +159,14 @@ class SankeiSpider(scrapy.Spider):
 
             #merger this page's content with previous content
             content_2 = content + content_1_1
+
+            #Get keywords and tagged_text
+            rake = jpRake()
+            keywords_list = rake.run(content_2)
+            keywords = '\n'.join(keywords_list)
+            tagged_text = rake.get_tagged_text()
+            article['keywords'] = keywords
+            article['tagged_text'] = tagged_text
             article['contents'] = content_2
 
 
@@ -173,10 +184,10 @@ class SankeiSpider(scrapy.Spider):
                 req.meta['article'] = article
                 req.meta['contents'] = content_2
                 yield req
-       
+
         except Exception, e:
             print 'Parse_next_page ERROR!!!!!!!!!!!!!  :'+response.url
             print traceback.print_exc(file = sys.stdout)
-    
+
 
 

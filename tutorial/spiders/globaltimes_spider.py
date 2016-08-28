@@ -13,6 +13,9 @@ import MySQLdb
 import datetime
 from _elementtree import Comment
 from pycparser.c_ast import Default
+import os
+sys.path.append(os.path.abspath("/var/www/html/asan/asan/rakes"))
+from ChRake import *
 
 class GlobaltimesSpider(scrapy.Spider):
     name = 'globaltimes'
@@ -48,12 +51,12 @@ class GlobaltimesSpider(scrapy.Spider):
                 article['date'] = site.xpath('em/text()').extract()
                 url = site.xpath('a/@href').extract()
                 news_url = ''.join(url)
-                
+
                 req = scrapy.Request(news_url, callback = self.parse_news)
                 req.meta['article'] = article
                 yield req
-                
-                
+
+
         except Exception, e:
             print 'ERROR!!!!!!!!!!!!!  URL :'
             print traceback.print_exc(file = sys.stdout)
@@ -66,7 +69,7 @@ class GlobaltimesSpider(scrapy.Spider):
     '''
     def parse_news(self, response):
         try:
-            
+
             article = response.meta['article']
 
             agency = response.xpath('//*[@id="source_baidu"]/a/text()').extract()
@@ -80,26 +83,26 @@ class GlobaltimesSpider(scrapy.Spider):
             content_1 = response.xpath('//*[@id="text"]/p/text()').extract()
             content = ''.join(content_1)
             article['contents'] = content
-            
+
             category = response.xpath('//*[@id="topC"]/div[1]/a[2]/text()').extract()
             category_1 = category[0]
             article['category'] = category_1
 
             #determine whether there has a next page
             if response.xpath('//*[@id="pages"]/a[2]/@href'):
-                
+
                 next_url = response.xpath('//*[@id="pages"]/a[2]/@href').extract()
                 next_url_1 = ''.join(next_url)
                 req = scrapy.Request(next_url_1, callback = self.parse_next_page)
                 req.meta['article'] = article
                 req.meta['contents'] = ''.join(content_1)
                 yield req
-                
-            
+
+
             else:
                 yield response.meta['article']
 
-            
+
             #get json url of comments
             get_url = 'http://commentn.huanqiu.com/api/v2/async?a=comment&m=source_info&appid=e8fcff106c8f&sourceid='+aid+'&url='+url
             get_url_read = urllib2.urlopen(get_url)
@@ -109,11 +112,11 @@ class GlobaltimesSpider(scrapy.Spider):
             comment_req = scrapy.Request(comment_json_url, callback = self.parse_comment)
             comment_req.meta['aid'] = aid
             yield comment_req
-            
-            
+
+
         except Exception, e:
             print 'Parse_news ERROR!!!!!!!!!!!!!  URL :'+ response.url
-            print traceback.print_exc(file = sys.stdout)    
+            print traceback.print_exc(file = sys.stdout)
 
 
     '''
@@ -131,14 +134,23 @@ class GlobaltimesSpider(scrapy.Spider):
 
             #merger this page's content with previous content
             content_2 = content + content_1_1
+            #Get keywords and tagged_text
+            rake = ChRake()
+            keywords_list = rake.run(content_2)
+            keywords = '\n'.join(keywords_list)
+            tagged_text = rake.get_tagged_text()
+
+            #Populate
             article['contents'] = content_2
-            
+            article['keywords'] = keywords
+            article['tagged_text'] = tagged_text
+
 
             this_page = response.url
             count = this_page[-6:-5]
-            
+
             count_1 = int(count)+1
-            
+
             str_1 = '//*[@id="pages"]/a['+str(count_1)+']/text()'
             str_2 = '//*[@id="pages"]/a['+str(count_1)+']/@href'
             count_2 = response.xpath(str_1).extract()
@@ -154,7 +166,7 @@ class GlobaltimesSpider(scrapy.Spider):
                 req.meta['article'] = article
                 req.meta['contents'] = content_2
                 yield req
-       
+
         except Exception, e:
             print 'Parse_next_page ERROR!!!!!!!!!!!!!  :'+response.url
             print traceback.print_exc(file = sys.stdout)
@@ -170,15 +182,15 @@ class GlobaltimesSpider(scrapy.Spider):
         json_read = urllib2.urlopen(response.url)
         json_content = json_read.read()
 
-        
+
         if len(json_content) > 70:
-            
+
             json_content_0 = json_content.replace(';try{ comment_list({"code":22000,"msg":"success","data":[','[')
             json_content_1 = json_content_0.replace(']}); }catch(e){}',']')
             json_content_2 = json_content_1.replace('"user":{','"user":[{')
             json_content_3 = json_content_2.replace('}}','}]}')
 
-        
+
             #read json
             comment_json = json.loads(json_content_3)
 
@@ -193,8 +205,8 @@ class GlobaltimesSpider(scrapy.Spider):
                     comment_time_1 = time.strftime('%Y-%m-%d %H:%M:%S', comment_time)
                     comment['date'] = comment_time_1
                     comment['username'] = items['user'][0].get('nickname')
-                
-                
+
+
                     yield comment
                 except Exception, e:
                     print 'Parse_comment ERROR!!!!!!!!!!!!!  :'
@@ -203,12 +215,12 @@ class GlobaltimesSpider(scrapy.Spider):
 
         else:
             print 'no comments'
-        
-        
-        
-        
 
 
 
 
-            
+
+
+
+
+

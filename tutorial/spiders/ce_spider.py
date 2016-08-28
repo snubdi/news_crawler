@@ -11,6 +11,9 @@ from urlparse import urlparse, parse_qs
 import scrapy
 from tutorial.items import CeArticleItem
 import MySQLdb
+import os
+sys.path.append(os.path.abspath("/var/www/html/asan/asan/rakes"))
+from ChRake import *
 
 class CeSpider(scrapy.Spider):
     name = 'ce'
@@ -122,10 +125,18 @@ class CeSpider(scrapy.Spider):
 
         #news category
         #category = response.xpath('//channel').extract()
+        #Get keywords and tagged_text
+        rake = ChRake()
+        keywords_list = rake.run(contents)
+        keywords = '\n'.join(keywords_list)
+        tagged_text = rake.get_tagged_text()
 
         #populate agency,contents,category
         article['agency'] = agency
         article['contents'] = contents
+        article['keywords'] = keywords
+        article['tagged_text'] = tagged_text
+
         if 'cysc' in response.url:
             article['category'] = '产业市场'
         elif 'sjjj' in response.url:

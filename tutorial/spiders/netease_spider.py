@@ -11,6 +11,9 @@ from urlparse import urlparse, parse_qs
 import scrapy
 from tutorial.items import NeteaseArticleItem,NeteaseCommentItem
 import MySQLdb
+import os
+sys.path.append(os.path.abspath("/var/www/html/asan/asan/rakes"))
+from ChRake import *
 
 class NeteaseSpider(scrapy.Spider):
     name = '163'
@@ -140,11 +143,21 @@ class NeteaseSpider(scrapy.Spider):
             #print agency
 
             content = response.xpath('//div[@class="post_text"]//p/text()').extract()
+            contents = ''.join(content)
 
+            #Get keywords and tagged_text
+            rake = ChRake()
+            keywords_list = rake.run(contents)
+            keywords = '\n'.join(keywords_list)
+            tagged_text = rake.get_tagged_text()
+
+            #Populate
             article['title'] = title[0]
             article['agency'] = agency[0]
             article['aid'] = aid
             article['contents'] = ''.join(content)
+            article['keywords'] = keywords
+            article['tagged_text'] = tagged_text
 
             yield response.meta['article']
 

@@ -6,6 +6,9 @@ import scrapy
 import MySQLdb
 from scrapy.http import Request, FormRequest
 from tutorial.items import NikkeiArticleItem
+import os
+sys.path.append(os.path.abspath("/var/www/html/asan/asan/rakes"))
+from jpRake import *
 
 
 class NikkeiSpider(scrapy.Spider):
@@ -26,15 +29,15 @@ class NikkeiSpider(scrapy.Spider):
     date = time.strftime('%Y%m%d', time.localtime(time.time()))
     url_paper = 'http://www.nikkei.com/paper/'
     #url_paper = 'http://www.nikkei.com/paper/morning/?b=20151203&d=0'
-    
-    
+
+
     '''
     Request login page
     '''
     def start_requests(self):
         return [Request("https://id.nikkei.com/lounge/nl/base/LA0010.seam", meta = {'cookiejar' : 2}, callback = self.post_login)]
-    
-    
+
+
     '''
     Post Form data and login
     '''
@@ -49,22 +52,22 @@ class NikkeiSpider(scrapy.Spider):
                                           meta = {'cookiejar': response.meta['cookiejar']},
                                           formdata = self.formdata,
                                           callback = self.after_login, dont_filter = True)]
-    
-    
+
+
     '''
     Request to news paper page after login
-    '''    
+    '''
     def after_login(self, response):
         print 'login!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
         print response.url
         #request to news paper page but it redirect to authonly page automatically
-        yield scrapy.Request(self.url_paper, 
+        yield scrapy.Request(self.url_paper,
                              meta = {'cookiejar': response.meta['cookiejar']},
                              callback = self.post_authonly)
-    
-        
+
+
     '''
-    Post authonly page before request to news paper page 
+    Post authonly page before request to news paper page
     '''
     def post_authonly(self, response):
         try:
@@ -91,16 +94,16 @@ class NikkeiSpider(scrapy.Spider):
                                             },
                                 method = 'post',
                                 callback = self.post_news)]
-            
+
 
         except Exception, e:
             print 'ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   URL :'
             print traceback.print_exc(file = sys.stdout)
-    
- 
+
+
     '''
     Post regist accounts page and redirect to news paper page
-    '''        
+    '''
     def post_news(self, response):
 
         print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
@@ -112,7 +115,7 @@ class NikkeiSpider(scrapy.Spider):
                             formdata = {'aa': response.xpath('//input[@name="aa"]/@value').extract()[0]},
                             callback = self.parse, dont_filter = True)]
 
-    
+
     '''
     Get news url from news list
     '''
@@ -120,7 +123,7 @@ class NikkeiSpider(scrapy.Spider):
         print '********************************************************'
         print response.url
         try:
-            
+
             #get news url from news list
             sites = response.xpath('//h4[@class="cmn-article_title"]')
             for site in sites:
@@ -128,25 +131,34 @@ class NikkeiSpider(scrapy.Spider):
                 news_url_1 = 'http://www.nikkei.com' + news_url
                 print news_url_1
                 yield scrapy.Request(news_url_1, meta = {'cookiejar': response.meta['cookiejar']}, callback = self.parse_news)
-        
+
         except Exception, e:
             print 'Parse ERROR!!!!!!!!!!!!!  URL :' + response.url
             print traceback.print_exc(file = sys.stdout)
-    
+
     '''
     Get contents of news from news page
-    '''    
+    '''
     def parse_news(self, response):
         print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
         print response.url
         try:
-            
+
             article = NikkeiArticleItem()
             #get title of news
             article['title'] = ''.join(response.xpath('//h1[@class="cmn-article_title cmn-clearfix"]/span/text()').extract()).strip()
             #get contents of news
-            article['contents'] = ''.join(response.xpath('//div[@class="cmn-article_text JSID_key_fonttxt"]/p//text()').extract()).strip()
-            print article['contents']
+            #article['contents'] = ''.join(response.xpath('//div[@class="cmn-article_text JSID_key_fonttxt"]/p//text()').extract()).strip()
+            contents = ''.join(response.xpath('//div[@class="cmn-article_text JSID_key_fonttxt"]/p//text()').extract()).strip()
+            #Get keywords and tagged_text
+            rake = jpRake()
+            keywords_list = rake.run(contents)
+            keywords = '\n'.join(keywords_list)
+            tagged_text = rake.get_tagged_text()
+
+            article['contents'] = contents
+            article['keywords'] = keywords
+            article['tagged_text'] = tagged_text
             #get url of news
             article['url'] = response.url
             #set agency of news
@@ -157,11 +169,11 @@ class NikkeiSpider(scrapy.Spider):
             #get date of news
             date_time = self.date[0:4] + '-' + self.date[4:6] +'-' + self.date[6:] + ' ' + '03:00:00'
             article['date'] = date_time
-            
+
             yield article
-            
+
         except Exception, e:
             print 'Parse_news ERROR!!!!!!!!!!!!!  URL :'+ response.url
             print traceback.print_exc(file = sys.stdout)
-        
-    
+
+

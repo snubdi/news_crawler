@@ -2,6 +2,7 @@
 
 import sys, traceback
 import re
+import os
 import time
 import json
 import copy
@@ -16,6 +17,8 @@ from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from pyvirtualdisplay import Display
 from scrapy.http import TextResponse
+sys.path.append(os.path.abspath("/var/www/html/asan/asan/rakes"))
+from rake import *
 
 
 class LexisNexisSpider(scrapy.Spider):
@@ -163,9 +166,16 @@ class LexisNexisSpider(scrapy.Spider):
                 news_content_list = [n.text for n in news_content_list]
                 news_content = '.'.join(news_content_list)
 
+                #Get keywords
+                rake = Rake()
+                keywords_list = rake.run(news_content)
+                keywords = '\n'.join(keywords_list)
+
+                #article['keywords'] = keywords
                 article['aid'] = news_id
                 article['date'] = news_date
                 article['contents'] = news_content
+                article['kyewords'] = keywords
             except Exception, e:
                 print 'ERROR!!!!!!!!!!!!!  URL :'
                 print traceback.print_exc(file=sys.stdout)

@@ -15,6 +15,11 @@ from scrapy.http import Request, FormRequest
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from pyvirtualdisplay import Display
+import os
+sys.path.append(os.path.abspath("/var/www/html/asan/asan/rakes"))
+from jpRake import *
+
+
 
 class YomiuriSpider(scrapy.Spider):
     name = 'yomiuri'
@@ -32,8 +37,8 @@ class YomiuriSpider(scrapy.Spider):
             self.driver.get("https://premium.yomiuri.co.jp/login.jsp?appType=PC&url=http%3A%2F%2Fpremium.yomiuri.co.jp%2Fpc%2F%23%2Fcheck%2Flist_NEWS%25255fMAIN")
             id = self.driver.find_element_by_xpath('//input[@name="id"]')
             password = self.driver.find_element_by_xpath('//input[@name="password"]')
-            id.send_keys("ayumis33@hotmail.com")
-            password.send_keys("ayumi2012")
+            id.send_keys("ayssh1025@gmail.com")
+            password.send_keys("snubdi38511")
             login = self.driver.find_element_by_xpath('//form[@id="frm"]')
             login.submit()
             time.sleep(5)
@@ -63,12 +68,19 @@ class YomiuriSpider(scrapy.Spider):
                     news_content = self.driver.find_elements_by_xpath('//div[@class="yp_article_body"]')
                     news_content = ''.join([content.text for content in news_content])
                     #print news_content
+                    rake = jpRake()
+                    keywords_list = rake.run(news_content)
+                    keywords = '\n'.join(keywords_list)
+                    tagged_text = rake.get_tagged_text()
+
                     article = YomiuriArticleItem()
                     article['url'] = u
                     article['aid'] = news_aid
                     article['title'] = news_title
                     article['date'] = news_date
                     article['contents'] = news_content
+                    article['keywords'] = keywords
+                    article['tagged_text'] = tagged_text
                     #print article
                     yield article
         finally:

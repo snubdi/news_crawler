@@ -4,7 +4,9 @@ import scrapy
 from tutorial.items import CnnArticleItem
 import MySQLdb
 import datetime
-
+import os
+sys.path.append(os.path.abspath("/var/www/html/asan/asan/rakes"))
+from rake import *
 
 class CnnSpider(scrapy.Spider):
     name = 'cnn'
@@ -55,6 +57,10 @@ class CnnSpider(scrapy.Spider):
             #get contents
             content_1 = response.xpath('//p[@class="zn-body__paragraph"]/text()').extract()
             content = ''.join(content_1)
+            rake = Rake()
+            keywords_list = rake.run(content)
+            keywords = '\n'.join(keywords_list)
+            article['keywords'] = keywords
             article['contents'] = content
             #get date of news
             pos = url.find('.com/')

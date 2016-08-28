@@ -11,6 +11,10 @@ from urlparse import urlparse, parse_qs
 import scrapy
 from tutorial.items import *
 import MySQLdb
+import os
+sys.path.append(os.path.abspath("/var/www/html/asan/asan/rakes"))
+from ChRake import *
+
 
 class XinhuaSpider(scrapy.Spider):
     name = 'xinhua'
@@ -22,7 +26,7 @@ class XinhuaSpider(scrapy.Spider):
     Constructor
     '''
     def __init__(self, categeory = '', *args, **kwargs):
-        
+
         if categeory == '':
             self.news_category = 'politics'
         else:
@@ -41,7 +45,7 @@ class XinhuaSpider(scrapy.Spider):
               'local': 'http://www.xinhuanet.com/local/news_province.xml'
         }
         return _category[news_category]
-                
+
 
 
     '''
@@ -65,10 +69,10 @@ class XinhuaSpider(scrapy.Spider):
                 #    continue
                 # news title
                 news_title = news_article.xpath('.//title/text()').extract()[0]
-                
+
                 # news date
                 news_date = ''.join(news_article.xpath('./text()').extract())
-                
+
                 article = XinhuaArticleItem()
                 article['url'] = news_url
                 article['aid'] = news_aid
@@ -76,12 +80,12 @@ class XinhuaSpider(scrapy.Spider):
                 #
                 article['date'] = news_date
                 article['category'] = self.news_category
-                
+
                 req = scrapy.Request(news_url, callback = self.parse_news, dont_filter = self.dont_filter)
                 req.meta['article'] = article
-                
+
                 yield req
-                
+
                 cnt += 1
             except Exception, e:
                 print 'ERROR!!!!!!!!!!!!!  URL :'
@@ -89,7 +93,7 @@ class XinhuaSpider(scrapy.Spider):
                 #pass
 
         print 'read %s articles' % cnt
-        
+
 
 
     '''
@@ -100,33 +104,42 @@ class XinhuaSpider(scrapy.Spider):
     def parse_news(self, response):
 
         article = response.meta['article']
-        
+
         news_date = time.strftime('%Y-%m-%d %H:%M:%S', self.parse_date(article['date']))
-        
+
         news_content = response.xpath('.//div[@id="center"]/div[@id="article"]/div[@class="article"]//text()').extract()
         news_content = ' '.join(news_content).strip()
         if len(news_content) <5:
             news_content = response.xpath('.//div[@class="main pagewidth"]/div[@id="content"]/p/text()').extract()
             news_content = ' '.join(news_content).strip()
-        
+
         news_author = response.xpath('.//div[@id="center"]/div[@id="article"]//em[@id="source"]//text()').extract()
         if len(news_author)>0:
             news_author = news_author[0]
         else:
             news_author = response.xpath('.//div[@class="main_tit"]/div[@class="info"]/span[@id="source"]//text()').extract()[0]
-        
+
+        #Get keywords and tagged_text
+        rake = ChRake()
+        keywords_list = rake.run(news_content)
+        keywords = '\n'.join(keywords_list)
+        tagged_text = rake.get_tagged_text()
+
+        #Populate
         article['contents'] = news_content
         article['date'] = news_date
         article['agency'] = news_author
-        
+        article['keywords'] = keywords
+        article['tagged_text'] = tagged_text
+
         yield article
         #for comment page
         #comment_url = response.xpath('.//div[@id="da-comment"]//a[@target="_blank"]/@href').extract()
-        
+
         comment_url = 'http://comment.home.news.cn/a/newsComm.do?_ksTS=1444922731622_49&callback=jsonp50&newsId=' + article['aid']
-        
+
         print comment_url
-        #if len(comment_url) >0:            
+        #if len(comment_url) >0:
         req = scrapy.Request(comment_url, callback = self.parse_comment, dont_filter = True)
         req.meta['newsId'] = article['aid']
         yield req
@@ -141,11 +154,11 @@ class XinhuaSpider(scrapy.Spider):
 
         return req
         '''
-        
+
     def parse_comment(self, response):
-        
+
         json_response = json.loads(response.body[8:-3])
-        
+
         for comment in json_response['contentAll']:
             comment_time = datetime.fromtimestamp(int(comment['commentTime']/1000))#.strftime('%d %m %Y %H:%M:%S')
             #print comment_time
@@ -198,4 +211,4 @@ class XinhuaSpider(scrapy.Spider):
     '''
     Debug method - update deleted column
     '''
-    
+

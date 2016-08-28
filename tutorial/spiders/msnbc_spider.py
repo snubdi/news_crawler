@@ -11,6 +11,9 @@ from urlparse import urlparse, parse_qs
 import scrapy
 from tutorial.items import MsnbcArticleItem
 import MySQLdb
+import os
+sys.path.append(os.path.abspath("/var/www/html/asan/asan/rakes"))
+from rake import *
 
 
 class MsnbcSpider(scrapy.Spider):
@@ -115,6 +118,11 @@ class MsnbcSpider(scrapy.Spider):
             news_time = response.xpath('.//time[@itemprop="datePublished"]/@datetime').extract()[0]
             news_time = news_time.replace("T", " ")
             news_time = news_time[:news_time.find(".")]
+        #Get keywords
+        rake = Rake()
+        keywords_list = rake.run(''.join(news_content))
+        keywords = '\n'.join(keywords_list)
+        article['keywords'] = keywords
         article['contents'] = ' '.join(news_content)
         article['date'] = news_time
 

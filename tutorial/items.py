@@ -22,6 +22,8 @@ class LexisnexisArticleItem(scrapy.Item):
     contents = scrapy.Field()
     url = scrapy.Field()
     agency = scrapy.Field()
+    keywords = scrapy.Field()
+    tagged_text = scrapy.Field()
 
 
 class MsnbcArticleItem(scrapy.Item):
@@ -30,6 +32,7 @@ class MsnbcArticleItem(scrapy.Item):
     title = scrapy.Field()
     contents = scrapy.Field()
     url = scrapy.Field()
+    keywords = scrapy.Field()
 
 class MainichiArticleItem(scrapy.Item):
     aid = scrapy.Field()
@@ -37,6 +40,8 @@ class MainichiArticleItem(scrapy.Item):
     title = scrapy.Field()
     contents = scrapy.Field()
     url = scrapy.Field()
+    keywords = scrapy.Field()
+    tagged_text = scrapy.Field()
 
 class YomiuriArticleItem(scrapy.Item):
     aid = scrapy.Field()
@@ -44,6 +49,8 @@ class YomiuriArticleItem(scrapy.Item):
     title = scrapy.Field()
     contents = scrapy.Field()
     url = scrapy.Field()
+    keywords = scrapy.Field()
+    tagged_text = scrapy.Field()
 class XinhuaCommentItem(scrapy.Item):
     date = scrapy.Field()
     aid = scrapy.Field()
@@ -60,6 +67,8 @@ class XinhuaArticleItem(scrapy.Item):
     contents = scrapy.Field()
     url = scrapy.Field()
     category = scrapy.Field()
+    keywords = scrapy.Field()
+    tagged_text = scrapy.Field()
 
 
 class MbcArticleItem(scrapy.Item):
@@ -69,6 +78,8 @@ class MbcArticleItem(scrapy.Item):
     title = scrapy.Field()
     contents = scrapy.Field()
     url = scrapy.Field()
+    keywords = scrapy.Field()
+    tagged_text = scrapy.Field()
 
 class NaverArticleItem(scrapy.Item):
     aid = scrapy.Field()
@@ -101,6 +112,8 @@ class NeteaseArticleItem(scrapy.Item):
     contents = scrapy.Field()
     url = scrapy.Field()
     referer = scrapy.Field()
+    keywords = scrapy.Field()
+    tagged_text = scrapy.Field()
 
 class NeteaseCommentItem(scrapy.Item):
     date = scrapy.Field()
@@ -121,6 +134,8 @@ class PeoplenetArticleItem(scrapy.Item):
     url = scrapy.Field()
     #referer = scrapy.Field()
     category = scrapy.Field()
+    keywords = scrapy.Field()
+    tagged_text = scrapy.Field()
 
 class PeoplenetCommentItem(scrapy.Item):
     date = scrapy.Field()
@@ -139,6 +154,8 @@ class CeArticleItem(scrapy.Item):
     contents = scrapy.Field()
     url = scrapy.Field()
     category = scrapy.Field()
+    keywords = scrapy.Field()
+    tagged_text = scrapy.Field()
 class GlobaltimesArticleItem(scrapy.Item):
     aid = scrapy.Field()
     #oid = scrapy.Field()
@@ -149,6 +166,8 @@ class GlobaltimesArticleItem(scrapy.Item):
     url = scrapy.Field()
     #referer = scrapy.Field()
     category = scrapy.Field()
+    keywords = scrapy.Field()
+    tagged_text = scrapy.Field()
 
 class GlobaltimesCommentItem(scrapy.Item):
     date = scrapy.Field()
@@ -170,6 +189,8 @@ class YahoonewsArticleItem(scrapy.Item):
     #referer = scrapy.Field()
     category = scrapy.Field()
     video = scrapy.Field()
+    keywords = scrapy.Field()
+    tagged_text = scrapy.Field()
 
 class YahoonewsCommentItem(scrapy.Item):
     date = scrapy.Field()
@@ -191,6 +212,8 @@ class SankeiArticleItem(scrapy.Item):
     #referer = scrapy.Field()
     category = scrapy.Field()
     video = scrapy.Field()
+    keywords = scrapy.Field()
+    tagged_text = scrapy.Field()
 
 class AsahiArticleItem(scrapy.Item):
     aid = scrapy.Field()
@@ -203,6 +226,8 @@ class AsahiArticleItem(scrapy.Item):
     #referer = scrapy.Field()
     category = scrapy.Field()
     video = scrapy.Field()
+    keywords = scrapy.Field()
+    tagged_text = scrapy.Field()
 
 class NikkeiArticleItem(scrapy.Item):
     aid = scrapy.Field()
@@ -212,6 +237,8 @@ class NikkeiArticleItem(scrapy.Item):
     contents = scrapy.Field()
     url = scrapy.Field()
     category = scrapy.Field()
+    keywords = scrapy.Field()
+    tagged_text = scrapy.Field()
 
 class CnnArticleItem(scrapy.Item):
     aid = scrapy.Field()
@@ -221,6 +248,8 @@ class CnnArticleItem(scrapy.Item):
     contents = scrapy.Field()
     url = scrapy.Field()
     category = scrapy.Field()
+    keywords = scrapy.Field()
+    tagged_text = scrapy.Field()
 
 class FoxArticleItem(scrapy.Item):
     aid = scrapy.Field()
@@ -230,6 +259,8 @@ class FoxArticleItem(scrapy.Item):
     contents = scrapy.Field()
     url = scrapy.Field()
     category = scrapy.Field()
+    keywords = scrapy.Field()
+    tagged_text = scrapy.Field()
 
 class NaverSummaryItem(scrapy.Item):
     aid = scrapy.Field()

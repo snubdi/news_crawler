@@ -15,6 +15,9 @@ from scrapy.http import Request, FormRequest
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 from _curses import meta
+import os
+sys.path.append(os.path.abspath("/var/www/html/asan/asan/rakes"))
+from jpRake import *
 
 
 class MainichiSpider(scrapy.Spider):
@@ -109,6 +112,14 @@ class MainichiSpider(scrapy.Spider):
             './/div[@id="main"]//div[@class="main-text"]/p[@class="txt"]/text()').extract()
         news_content = ' '.join(news_content).strip()
 
+        #Get keywords and tagged_text
+        rake = jpRake()
+        keywords_list = rake.run(news_content)
+        keywords = '\n'.join(keywords_list)
+        tagged_text = rake.get_tagged_text()
+
+        article['keywrods'] = keywords
+        article['tagged_text'] = tagged_text
         article['contents'] = news_content
         #print article
         yield article
