@@ -100,10 +100,10 @@ class YahoonewsSpider(scrapy.Spider):
 
             #determine the location of content based on whether there has a video
             if video == 0:
-                content = response.xpath('//*[@id="main"]/div[1]/div[1]/div[3]/div[1]/p/text()').extract()
+                contents = ' '.join(response.xpath('//p[@class="ynDetailText"]//text()').extract())
                 article['category'] = response.xpath('//div[@class="gnSecWrap"]//li[@class="current"]/a/text()').extract()[0]
             else:
-                content = response.xpath('//div[@class="marB10 clearFix yjMt"]/text()').extract()
+                contents = ' '.join(response.xpath('//div[@class="ymuiContainerNopad"]//text()').extract())
                 article['category'] = response.xpath('//div[@id="subNav"]/ul/li/a//span[@class="select"]/text()').extract()[0]
 
             content_1 = ''.join(content).strip()
