@@ -165,6 +165,8 @@ class GlobaltimesSpider(scrapy.Spider):
                 req = scrapy.Request(next_url_1, callback = self.parse_next_page)
                 req.meta['article'] = article
                 req.meta['contents'] = content_2
+                req.meta['keywords'] = keywords
+                req.meta['tagged_text'] = tagged_text
                 yield req
 
         except Exception, e:
