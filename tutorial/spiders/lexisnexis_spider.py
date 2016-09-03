@@ -175,7 +175,7 @@ class LexisNexisSpider(scrapy.Spider):
                 article['aid'] = news_id
                 article['date'] = news_date
                 article['contents'] = news_content
-                article['kyewords'] = keywords
+                article['keywords'] = keywords
             except Exception, e:
                 print 'ERROR!!!!!!!!!!!!!  URL :'
                 print traceback.print_exc(file=sys.stdout)

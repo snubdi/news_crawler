@@ -118,7 +118,7 @@ class MainichiSpider(scrapy.Spider):
         keywords = '\n'.join(keywords_list)
         tagged_text = rake.get_tagged_text()
 
-        article['keywrods'] = keywords
+        article['keywords'] = keywords
         article['tagged_text'] = tagged_text
         article['contents'] = news_content
         #print article

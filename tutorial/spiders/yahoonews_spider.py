@@ -106,7 +106,7 @@ class YahoonewsSpider(scrapy.Spider):
                 contents = ' '.join(response.xpath('//div[@class="ymuiContainerNopad"]//text()').extract())
                 article['category'] = response.xpath('//div[@id="subNav"]/ul/li/a//span[@class="select"]/text()').extract()[0]
 
-            content_1 = ''.join(content).strip()
+            content_1 = ''.join(contents).strip()
 
             #Get keywords and tagged_text
             rake = jpRake()
