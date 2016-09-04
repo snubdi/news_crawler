@@ -4,9 +4,7 @@ import scrapy
 from tutorial.items import CnnArticleItem
 import MySQLdb
 import datetime
-import os
-sys.path.append(os.path.abspath("/var/www/html/asan/asan/rakes"))
-from rake import *
+
 
 class CnnSpider(scrapy.Spider):
     name = 'cnn'
@@ -35,7 +33,7 @@ class CnnSpider(scrapy.Spider):
                     req = scrapy.Request(news_url, callback = self.parse_news)
                     req.meta['article'] = article
                     yield req
-
+                   
         except Exception, e:
             print 'ERROR!!!!!!!!!!!!!  URL :'
             print traceback.print_exc(file = sys.stdout)
@@ -55,12 +53,8 @@ class CnnSpider(scrapy.Spider):
             url = response.url
             article['url'] = url
             #get contents
-            content_1 = response.xpath('//p[@class="zn-body__paragraph"]/text()').extract()
+            content_1 = response.xpath('//*[@class="zn-body__paragraph"]//text()').extract()
             content = ''.join(content_1)
-            rake = Rake()
-            keywords_list = rake.run(content)
-            keywords = '\n'.join(keywords_list)
-            article['keywords'] = keywords
             article['contents'] = content
             #get date of news
             pos = url.find('.com/')
@@ -71,12 +65,12 @@ class CnnSpider(scrapy.Spider):
             hour_minute_2 = hour_minute_1[0 : 2] + ':' + hour_minute_1[2 :] + ':00'
             article['date'] = date.ljust(11) + hour_minute_2
             #get category of news
-            article['category'] = response.url.split("/")[-3]
+            article['category'] = response.url.split("/")[-3]            
             yield article
-
+                        
         except Exception, e:
             print 'Parse_news ERROR!!!!!!!!!!!!!  URL :'+ response.url
-            print traceback.print_exc(file = sys.stdout)
+            print traceback.print_exc(file = sys.stdout)    
 
 
-
+    
