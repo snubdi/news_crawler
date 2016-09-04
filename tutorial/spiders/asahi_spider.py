@@ -133,7 +133,7 @@ class AsahiSpider(scrapy.Spider):
             #article['contents'] = ''.join(response.xpath('//div[@class="ArticleText"]//text()').extract()).strip()
             #Get keywords and tagged_text
             rake = jpRake()
-            keyowrds_list = rake.run(contents)
+            keywords_list = rake.run(contents)
             keywords = '\n'.join(keywords_list)
             tagged_text = rake.get_tagged_text()
 
@@ -146,6 +146,3 @@ class AsahiSpider(scrapy.Spider):
         except Exception, e:
             print 'Parse_news ERROR!!!!!!!!!!!!!  URL :'+ response.url
             print traceback.print_exc(file = sys.stdout)
-
-
-
