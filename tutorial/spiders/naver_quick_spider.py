@@ -184,11 +184,12 @@ class NaverQuickSpider(scrapy.Spider):
         #res = tres.run()
         #keywords = '|||'.join(res[0])
         #tagged_text = res[1]
-        
+
         tres = korRake()
-        keywords = tres.run(contents)
+        keywords_list = tres.run(contents)
+        keywords = '\n'.join(keywords_list)
         tagged_text = tres.get_tagged_text()
-        
+
         #keywords = run(contents)
         #tagged_text = get_tagged_text(contents,contents)
 

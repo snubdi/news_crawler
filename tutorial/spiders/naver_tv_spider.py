@@ -113,7 +113,8 @@ class NaverTvSpider(scrapy.Spider):
             contents = ' '.join(response.xpath('//div[@id="newsEndContents"]//text()').extract()).strip()
 
         tres = korRake()
-        keywords = tres.run(contents)
+        keywords_list = tres.run(contents)
+        keywords = '\n'.join(keywords_list)
         tagged_text = tres.get_tagged_text()
         article['keywords'] = keywords
         article['tagged_text'] = tagged_text
