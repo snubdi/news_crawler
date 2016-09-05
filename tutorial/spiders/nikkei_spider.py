@@ -43,6 +43,8 @@ class NikkeiSpider(scrapy.Spider):
     '''
     def post_login(self, response):
         print 'login~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+        print response.url
+        #print response.body
         #get formdata from login page
         self.formdata['controlParamKey'] = response.xpath('//*[@id="j_id11"]/input[2]/@value').extract()[0]
         self.formdata['javax.faces.ViewState'] = response.xpath('//*[@id="j_id11"]/input[3]/@value').extract()[0]
@@ -74,6 +76,8 @@ class NikkeiSpider(scrapy.Spider):
 
             print '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
             print response.url
+            #print response.body
+            '''
             #get form data from authonly page
             rpid = response.xpath('//input[@name="rpid"]/@value').extract()[0]
             pxep = response.xpath('//input[@name="pxep"]/@value').extract()[0]
@@ -81,6 +85,7 @@ class NikkeiSpider(scrapy.Spider):
             clg = response.xpath('//input[@name="clg"]/@value').extract()[0]
             dps = response.xpath('//input[@name="dps"]/@value').extract()[0]
             xp0 = response.xpath('//input[@name="xp0"]/@value').extract()[0]
+            
 
             #post form data
             return [FormRequest(url = "https://id.nikkei.com/lounge/ep/authonly",
@@ -94,6 +99,28 @@ class NikkeiSpider(scrapy.Spider):
                                             },
                                 method = 'post',
                                 callback = self.post_news)]
+            '''
+            response_type = response.xpath('//input[@name="response_type"]/@value').extract()[0]
+            client_id = response.xpath('//input[@name="client_id"]/@value').extract()[0]
+            redirect_uri = response.xpath('//input[@name="redirect_uri"]/@value').extract()[0]
+            scope = response.xpath('//input[@name="scope"]/@value').extract()[0]
+            nonce = response.xpath('//input[@name="nonce"]/@value').extract()[0]
+            state = response.xpath('//input[@name="state"]/@value').extract()[0]
+            x_dps = response.xpath('//input[@name="x_dps"]/@value').extract()[0]
+
+            return [FormRequest(url = "https://id.nikkei.com/lounge/ep/connect/auth",
+                                meta = {'cookiejar': response.meta['cookiejar']},
+                                formdata = {'response_type': response_type,
+                                            'client_id': client_id,
+                                            'redirect_uri': redirect_uri,
+                                            'scope': scope,
+                                            'nonce' : nonce,
+                                            'state': state,
+                                            'x_dps': x_dps
+                                            },
+                                method = 'post',
+                                callback = self.post_news)]
+            
 
 
         except Exception, e:
@@ -108,12 +135,16 @@ class NikkeiSpider(scrapy.Spider):
 
         print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
         print response.url
+        print response.body
         #post form data and request to news paper page
         news_list = 'https://regist.nikkei.com/ds/etc/accounts/auth?url=' + self.url_paper
         return [FormRequest(url = news_list,
                             meta = {'cookiejar': response.meta['cookiejar']},
-                            formdata = {'aa': response.xpath('//input[@name="aa"]/@value').extract()[0]},
+                            formdata = {#'aa': response.xpath('//input[@name="aa"]/@value').extract()[0]
+                                        'code': response.xpath('//input[@name="code"]/@value').extract()[0],
+                                        'state': response.xpath('//input[@name="state"]/@value').extract()[0]},
                             callback = self.parse, dont_filter = True)]
+        
 
 
     '''
@@ -175,5 +206,3 @@ class NikkeiSpider(scrapy.Spider):
         except Exception, e:
             print 'Parse_news ERROR!!!!!!!!!!!!!  URL :'+ response.url
             print traceback.print_exc(file = sys.stdout)
-
-
