@@ -170,12 +170,14 @@ class LexisNexisSpider(scrapy.Spider):
                 rake = Rake()
                 keywords_list = rake.run(news_content)
                 keywords = '\n'.join(keywords_list)
+                tag = rake.get_tagged_text()
 
                 #article['keywords'] = keywords
                 article['aid'] = news_id
                 article['date'] = news_date
                 article['contents'] = news_content
                 article['keywords'] = keywords
+                article['tagged_text'] = tag
             except Exception, e:
                 print 'ERROR!!!!!!!!!!!!!  URL :'
                 print traceback.print_exc(file=sys.stdout)

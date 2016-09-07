@@ -33,6 +33,7 @@ class MsnbcArticleItem(scrapy.Item):
     contents = scrapy.Field()
     url = scrapy.Field()
     keywords = scrapy.Field()
+    tagged_text = scrapy.Field()
 
 class MainichiArticleItem(scrapy.Item):
     aid = scrapy.Field()
