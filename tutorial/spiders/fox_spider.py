@@ -65,8 +65,10 @@ class FoxSpider(scrapy.Spider):
             rake = Rake()
             keywords_list = rake.run(content)
             keywords = '\n'.join(keywords_list)
+            tag = rake.get_tagged_text()
             article['contents'] = content
             article['keywords'] = keywords
+            article['tagged_text'] = tag
             #get date of news
             date_time = response.xpath('//time[@itemprop="datePublished"]/@datetime').extract()[0]
             date_time_1 = date_time[0:16].replace('T',' ') + ':00'

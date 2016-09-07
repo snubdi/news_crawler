@@ -122,7 +122,9 @@ class MsnbcSpider(scrapy.Spider):
         rake = Rake()
         keywords_list = rake.run(''.join(news_content))
         keywords = '\n'.join(keywords_list)
+        tag = rake.get_tagged_text()
         article['keywords'] = keywords
+        article['tagged_text'] = tag
         article['contents'] = ' '.join(news_content)
         article['date'] = news_time
 
