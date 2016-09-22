@@ -67,10 +67,12 @@ class PeoplenetSpider(scrapy.Spider):
             #read json
             hjson = json.loads(js_0)
             for items in hjson:
+                print items['date']
                 article = PeoplenetArticleItem()
                 article['aid'] = items['id']
                 article['date'] = items['date']
-                article['title'] = items['title']
+                #article['title'] = items['title']
+                article['title'] = items['title'].replace('&nbsp;','')
                 article['url'] = items['url']
                 news_url = items['url']
 
@@ -89,6 +91,8 @@ class PeoplenetSpider(scrapy.Spider):
     Args:
      response - the response object pertaining to the next page of a given news
     '''
+
+    '''
     def parse_next_page(self, response):
 
         try:
@@ -102,7 +106,7 @@ class PeoplenetSpider(scrapy.Spider):
 
             #join the contents of this page to the contents of last page
             content_2 = content + content_1_1
-            article['contents'] = content_2
+            #article['contents'] = content_2
 
             #determine whether there have next page
             this_page = response.url
@@ -126,7 +130,7 @@ class PeoplenetSpider(scrapy.Spider):
                 print 'Parse_next_page ERROR!!!!!!!!!!!!!  :'
                 print items
                 print traceback.print_exc(file = sys.stdout)
-
+        '''
 
     '''
     1: Retrieve the next page of a news if have
@@ -138,9 +142,17 @@ class PeoplenetSpider(scrapy.Spider):
         try:
             #get the rest of the article
             article = response.meta['article']
-            agency = response.xpath('//*[@id="p_origin"]/a/text()').extract()
-            content_1 = response.xpath('//*[@id="p_content"]/p/text()').extract()
-            article['agency'] = agency[0]
+            #print '###############'
+            agency = response.xpath('//div[@class="clearfix w1000_320 text_title"]//div[@class="box01"]//div[@class="fl"]//a/text()').extract()
+            #agency = ''.join(agency_list)
+            #agency = response.xpath('//*[@class="fl"]/a/text()').extract()
+            #agency = response.xpath('.//div[@class="box01"]/a/text()').extract()
+            #print agency
+            #print '###############'
+            #agency = response.xpath('//*[@id="p_origin"]/a/text()').extract()
+            content_1 = response.xpath('//*[@id="rwb_zw"]/p/text()').extract()
+            #print content_1
+            article['agency'] = agency
 
 
             #get the cagegory of news
@@ -223,25 +235,28 @@ class PeoplenetSpider(scrapy.Spider):
                 article['category'] = '其他'
 
 
-            content = ''.join(content_1)
+            #content = ''.join(content_1)
             #Get keywords and tagged_text
+            content = ''.join(content_1).replace(' ','')
             rake = ChRake()
             keywords_list = rake.run(content)
             keywords = '\n'.join(keywords_list)
-            tagged_text = rake.get_tagged_text
+            tagged_text = rake.get_tagged_text()
+          
+            
 
-            article['contents'] = ''.join(content_1)
+            article['contents'] = content
             article['keywords'] = keywords
             article['tagged_text'] = tagged_text
 
-            if response.xpath('//*[@id="p_content"]/div[3]'):
+            if response.xpath('//*[@id="rwb_zw"]/center/table/tbody/tr/td/a/text()'):
 
-                next_url_0 = response.xpath('//*[@id="p_content"]/div[3]/a[2]/@href').extract()
+                next_url_0 = response.xpath('//*[@id="rwb_zw"]/div[2]/a[2]/@href').extract()
                 pos = category_url.find("/n/")
                 next_url = category_url[:pos]+str(next_url_0[0])
                 req = scrapy.Request(next_url, callback = self.parse_next_page, dont_filter = self.dont_filter)
                 req.meta['article'] = article
-                req.meta['contents'] = ''.join(content_1)
+                req.meta['contents'] = ''.join(content_1).strip('')
                 yield req
 
 
