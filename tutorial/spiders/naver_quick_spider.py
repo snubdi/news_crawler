@@ -40,10 +40,12 @@ class NaverQuickSpider(scrapy.Spider):
         self.e_date = end_date
         self.c_date = check_date
         if check_date == '':
-            yesterday = datetime.now() + timedelta(days = -0)
-            self.c_date = yesterday.strftime("%Y%m%d")
+            #Default Check_date is today
+            today = datetime.now() + timedelta(days = -0)
+            self.c_date = today.strftime("%Y%m%d")
             print self.c_date
-        self.start_urls = [self.get_query_url(self.c_date, self.page_cnt)]
+        #self.start_urls = [self.get_query_url(self.c_date, self.page_cnt)]
+        self.start_urls = self.get_query_url(self.c_date, self.page_cnt)
         super(NaverQuickSpider, self).__init__(*args, **kwargs)
         self.display = Display(visible=0, size=(1280, 1024))
         self.display.start()
@@ -65,10 +67,36 @@ class NaverQuickSpider(scrapy.Spider):
         #qs = {'query': keyword}
         #'http://news.naver.com/main/list.nhn?sid1=001&mid=sec&mode=LSD&listType=paper' \
         #return 'http://news.naver.com/main/list.nhn?sid1=001&mid=sec&mode=LSD&' \
+        '''
         return 'http://news.naver.com/main/list.nhn?mode=LSD&mid=sec&sid1=001&listType=paper' \
                 + '&date=' + check_date \
                 + '&page=' + str(page) \
-
+        '''
+        #return 'http://news.naver.com/main/list.nhn?mode=LSD&mid=sec&sid1=001&listType=paper' + '&date=' + check_date + '&page=' + str(page)
+        return [#'http://news.naver.com/main/list.nhn?oid=032&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=1',
+        #'http://news.naver.com/main/list.nhn?oid=032&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=2',
+        #'http://news.naver.com/main/list.nhn?oid=032&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=3',
+        #'http://news.naver.com/main/list.nhn?oid=032&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=4',
+        'http://news.naver.com/main/list.nhn?oid=028&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=1',
+        'http://news.naver.com/main/list.nhn?oid=028&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=2',
+        'http://news.naver.com/main/list.nhn?oid=028&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=3',
+        #'http://news.naver.com/main/list.nhn?oid=020&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=1',
+        #'http://news.naver.com/main/list.nhn?oid=020&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=2',
+        #'http://news.naver.com/main/list.nhn?oid=020&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=3',
+        #'http://news.naver.com/main/list.nhn?oid=020&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=11',
+        #'http://news.naver.com/main/list.nhn?oid=020&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=12',
+        #'http://news.naver.com/main/list.nhn?oid=020&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=13',
+        #'http://news.naver.com/main/list.nhn?oid=023&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=1',
+        #'http://news.naver.com/main/list.nhn?oid=023&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=2',
+        #'http://news.naver.com/main/list.nhn?oid=023&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=3',
+        #'http://news.naver.com/main/list.nhn?oid=023&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=4',
+        #'http://news.naver.com/main/list.nhn?oid=023&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=5',
+        #'http://news.naver.com/main/list.nhn?oid=023&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=6',
+        #'http://news.naver.com/main/list.nhn?oid=025&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=1',
+        #'http://news.naver.com/main/list.nhn?oid=025&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=2',
+        #'http://news.naver.com/main/list.nhn?oid=025&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=3',
+        #'http://news.naver.com/main/list.nhn?oid=025&listType=paper&mid=sec&mode=LPOD&date='+ check_date + '&page=4',
+        ]
 
 
     '''
@@ -79,15 +107,17 @@ class NaverQuickSpider(scrapy.Spider):
     '''
     def parse(self, response):
         # next page end condition
-        next_button = response.xpath('//td[@class="content"]//div[@class="paging"]/a[@class="next"]')
+        #next_button = response.xpath('//td[@class="content"]//div[@class="paging"]/a[@class="next"]')
         #if self.page_cnt >10:
+        '''
         if len(next_button) == 0 and self.page_cnt >= int(response.xpath('//td[@class="content"]//div[@class="paging"]/a/text()').extract()[-1]):
             print "!!!!!!!!!!!!!get max page" + str(self.page_cnt)
             return
+        '''
         # determine whether to go ahead with parse or not
         news_list= response.xpath('//td[@class="content"]//div[@id="main_content"]//li')
 
-        print 'Page %s' % self.page_cnt
+        #print 'Page %s' % self.page_cnt
         print 'news_size is :' + str(len(news_list))
         cnt = 0
         for news_article in news_list:
@@ -96,8 +126,10 @@ class NaverQuickSpider(scrapy.Spider):
                 # news agency
                 agency = news_article.xpath('.//span[@class="writing"]/text()').extract()[0]
 
+                '''
                 if agency not in [u'경향신문',u'중앙일보',u'한겨레',u'동아일보',u'조선일보']:
                     continue
+                '''
                 # naver news link
                 news_url = news_article.xpath('.//a/@href').extract()[0]
 
@@ -142,9 +174,9 @@ class NaverQuickSpider(scrapy.Spider):
 
         print 'read %s articles' % cnt
 
-        self.page_cnt += 1
-        next_page_url = self.get_query_url(self.c_date, self.page_cnt)
-        yield scrapy.Request(next_page_url, callback = self.parse, dont_filter = self.dont_filter)
+        #self.page_cnt += 1
+        #next_page_url = self.get_query_url(self.c_date, self.page_cnt)
+        #yield scrapy.Request(next_page_url, callback = self.parse, dont_filter = self.dont_filter)
 
 
     '''
